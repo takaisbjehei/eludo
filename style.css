@@ -271,6 +271,30 @@ body {
     100% { transform: translateX(4px); }
 }
 
+:root {
+    --color-red: #e52521;
+    --color-red-dark: #8b0000;
+    --color-green: #009e47;
+    --color-green-dark: #004d20;
+    --color-blue: #00a2ed;
+    --color-blue-dark: #005885;
+    --color-yellow: #cca01e;
+    --color-yellow-dark: #8c6d00;
+    
+    --bg-dark: #0b0f19;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --accent-gold: #f59e0b;
+    --grid-line: #cbd5e1;
+    --board-bg: #ffffff;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+}
+
 /* ==========================================
    Exact Ludo Board Stage (15x15 Grid)
    ========================================== */
@@ -283,11 +307,11 @@ body {
 }
 
 .ludo-board {
-    width: min(84vw, 84vh, 580px);
-    height: min(84vw, 84vh, 580px);
-    background: var(--board-bg);
-    border: 3px solid #334155;
-    border-radius: 14px;
+    width: min(88vw, 84vh, 600px);
+    height: min(88vw, 84vh, 600px);
+    background: #ffffff;
+    border: 3px solid #1e293b;
+    border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     display: grid;
     grid-template-columns: repeat(15, 1fr);
@@ -302,7 +326,7 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    padding: 7%;
+    padding: 9%;
 }
 
 .yard-red {
@@ -338,16 +362,16 @@ body {
     width: 100%;
     height: 100%;
     background: #ffffff;
-    border-radius: 8px;
+    border-radius: 6px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     padding: 10%;
     gap: 16%;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
-/* Yard Circular Token Slots with Concentric Rings matching image */
+/* Yard Concentric Rings exactly matching image */
 .yard-slot {
     width: 100%;
     height: 100%;
@@ -360,34 +384,33 @@ body {
 
 .yard-red .yard-slot {
     background: #ffffff;
-    border: 3px solid #8b0000;
-    box-shadow: 0 0 0 2px var(--color-red);
+    border: 3.5px solid #8b0000;
+    box-shadow: 0 0 0 1.5px var(--color-red);
 }
 
 .yard-green .yard-slot {
     background: #ffffff;
-    border: 3px solid #004d20;
-    box-shadow: 0 0 0 2px var(--color-green);
+    border: 3.5px solid #004d20;
+    box-shadow: 0 0 0 1.5px var(--color-green);
 }
 
 .yard-blue .yard-slot {
     background: #ffffff;
-    border: 3px solid #005885;
-    box-shadow: 0 0 0 2px var(--color-blue);
+    border: 3.5px solid #005885;
+    box-shadow: 0 0 0 1.5px var(--color-blue);
 }
 
 .yard-yellow .yard-slot {
     background: #ffffff;
-    border: 3px solid #a07800;
-    box-shadow: 0 0 0 2px var(--color-yellow);
+    border: 3.5px solid #7a5c00;
+    box-shadow: 0 0 0 1.5px var(--color-yellow);
 }
 
 /* Solid Colored Slot Disc underneath pawn when empty */
 .slot-disc {
-    width: 65%;
-    height: 65%;
+    width: 68%;
+    height: 68%;
     border-radius: 50%;
-    opacity: 0.95;
 }
 
 .red-disc { background: var(--color-red); }
@@ -439,27 +462,26 @@ body {
 }
 
 /* Colored Paths */
-.tile.red-bg { background-color: var(--color-red); border-color: var(--color-red-dark); }
-.tile.green-bg { background-color: var(--color-green); border-color: var(--color-green-dark); }
-.tile.yellow-bg { background-color: var(--color-yellow); border-color: var(--color-yellow-dark); }
-.tile.blue-bg { background-color: var(--color-blue); border-color: var(--color-blue-dark); }
+.tile.red-bg { background-color: var(--color-red) !important; border-color: #b91c1c; }
+.tile.green-bg { background-color: var(--color-green) !important; border-color: #047857; }
+.tile.yellow-bg { background-color: var(--color-yellow) !important; border-color: #a16207; }
+.tile.blue-bg { background-color: var(--color-blue) !important; border-color: #0284c7; }
 
 /* Star & Arrow Badges on Board */
 .tile .star-icon {
-    font-size: clamp(16px, 3vw, 24px);
-    color: #475569;
-    font-weight: 300;
-    line-height: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    width: 60%;
+    height: 60%;
 }
 
 .tile .arrow-icon {
-    font-size: clamp(14px, 2.5vw, 22px);
-    font-weight: 900;
-    line-height: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 55%;
+    height: 55%;
 }
 
 .tile .arrow-red { color: var(--color-red); }
@@ -467,14 +489,13 @@ body {
 .tile .arrow-yellow { color: var(--color-yellow); }
 .tile .arrow-blue { color: var(--color-blue); }
 
-/* Center Home (3x3 SVG Triangles) */
+/* Center Triangles */
 .center-home {
     grid-column: 7 / 10;
     grid-row: 7 / 10;
     position: relative;
     background: #ffffff;
     border: 1px solid var(--grid-line);
-    overflow: hidden;
 }
 
 .center-svg {

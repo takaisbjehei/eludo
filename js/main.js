@@ -103,24 +103,50 @@ class LudoApp {
         if (r === 6 && c === 1) {
             tile.classList.add('red-bg');
         } else if (r === 6 && c === 0) {
-            tile.innerHTML = '<span class="arrow-icon arrow-red">➔</span>';
+            tile.innerHTML = `
+                <span class="arrow-icon">
+                    <svg viewBox="0 0 24 24" width="100%" height="100%">
+                        <path d="M4 12 h14 M12 6 l6 6 -6 6" fill="none" stroke="#e52521" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>`;
         } else if (r === 1 && c === 8) {
             tile.classList.add('green-bg');
         } else if (r === 0 && c === 8) {
-            tile.innerHTML = '<span class="arrow-icon arrow-green">⬇</span>';
+            tile.innerHTML = `
+                <span class="arrow-icon">
+                    <svg viewBox="0 0 24 24" width="100%" height="100%">
+                        <path d="M12 4 v14 M6 12 l6 6 6 -6" fill="none" stroke="#009e47" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>`;
         } else if (r === 8 && c === 13) {
             tile.classList.add('yellow-bg');
         } else if (r === 8 && c === 14) {
-            tile.innerHTML = '<span class="arrow-icon arrow-yellow">⬅</span>';
+            tile.innerHTML = `
+                <span class="arrow-icon">
+                    <svg viewBox="0 0 24 24" width="100%" height="100%">
+                        <path d="M20 12 h-14 M12 6 l-6 6 6 6" fill="none" stroke="#cca01e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>`;
         } else if (r === 13 && c === 6) {
             tile.classList.add('blue-bg');
         } else if (r === 14 && c === 6) {
-            tile.innerHTML = '<span class="arrow-icon arrow-blue">⬆</span>';
+            tile.innerHTML = `
+                <span class="arrow-icon">
+                    <svg viewBox="0 0 24 24" width="100%" height="100%">
+                        <path d="M12 20 v-14 M6 12 l6 -6 6 6" fill="none" stroke="#00a2ed" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>`;
         }
 
-        // Safe Star Tiles (Exact coordinates from reference)
+        // Safe Star Tiles (Exact coordinates & clean outlined star from reference)
         if ((r === 2 && c === 6) || (r === 6 && c === 12) || (r === 12 && c === 8) || (r === 8 && c === 2)) {
-            tile.innerHTML = '<span class="star-icon">★</span>';
+            tile.innerHTML = `
+                <span class="star-icon">
+                    <svg viewBox="0 0 24 24" width="100%" height="100%">
+                        <polygon points="12,2 15,8.8 22.3,9.5 16.8,14.5 18.5,21.6 12,17.8 5.5,21.6 7.2,14.5 1.7,9.5 9,8.8" 
+                                 fill="#ffffff" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round"/>
+                    </svg>
+                </span>`;
         }
 
         return tile;
@@ -355,8 +381,8 @@ class LudoApp {
 
         const colorHexMap = {
             red: '#e52521',
-            green: '#009746',
-            yellow: '#fec006',
+            green: '#009e47',
+            yellow: '#cca01e',
             blue: '#00a2ed'
         };
 
