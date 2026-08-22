@@ -1,0 +1,437 @@
+/* Controller Mobile Companion Styles */
+:root {
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --accent-blue: #38bdf8;
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+    --text-light: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 12px;
+}
+
+.controller-app {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Header */
+.ctrl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.ctrl-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ctrl-icon {
+    font-size: 1.3rem;
+}
+
+.ctrl-brand h1 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-light);
+}
+
+.stealth-mode-btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    background: #334155;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.stealth-mode-btn:active {
+    background: #475569;
+}
+
+/* Connect Card */
+.connect-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.connect-row {
+    display: flex;
+    gap: 8px;
+}
+
+#input-room-code {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+#input-room-code:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.btn-connect {
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.btn-connect:active {
+    opacity: 0.85;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.dot-yellow { background: #eab308; box-shadow: 0 0 8px #eab308; }
+.dot-green { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+.dot-red { background: #ef4444; }
+
+/* Main Remote Layout */
+.remote-main {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Live Card */
+.live-card {
+    background: linear-gradient(135deg, #1e293b, #1e1b4b);
+    border: 1px solid #4338ca;
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.live-badge {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #ef4444;
+    letter-spacing: 1px;
+}
+
+.turn-owner {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-top: 4px;
+    color: #fff;
+}
+
+.active-dice-peek {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.active-dice-peek strong {
+    font-size: 1.2rem;
+    color: var(--accent-blue);
+}
+
+/* Selection Status */
+.selection-status-box {
+    background: #111827;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.mode-highlight {
+    color: #38bdf8;
+    font-size: 1.05rem;
+}
+
+/* Number Pad */
+.numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.num-btn {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: var(--radius-lg);
+    padding: 18px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.num-btn:active {
+    transform: scale(0.95);
+    background: #3b82f6;
+    border-color: #60a5fa;
+}
+
+.num-btn.active-forced {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-color: #93c5fd;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+}
+
+.num-digit {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.num-dots {
+    font-size: 1.4rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.num-btn.active-forced .num-dots {
+    color: #ffffff;
+}
+
+/* Action Buttons */
+.actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-neutral {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.btn-action {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Toggle Card */
+.toggle-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #f1f5f9;
+}
+
+.toggle-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    transition: .3s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .3s;
+}
+
+input:checked + .slider {
+    background-color: #10b981;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Stealth Calculator Disguise View */
+.disguise-view {
+    background: #000;
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.calc-display {
+    color: #fff;
+    font-size: 3rem;
+    font-weight: 300;
+    text-align: right;
+    padding: 10px;
+    min-height: 70px;
+}
+
+.calc-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.calc-btn {
+    border: none;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    font-size: 1.4rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.calc-num {
+    background: #333333;
+    color: #fff;
+}
+
+.calc-op {
+    background: #ff9f0a;
+    color: #fff;
+}
+
+.calc-keypad .calc-op:nth-child(-n+4) {
+    background: #a5a5a5;
+    color: #000;
+}
+
+.calc-zero {
+    grid-column: span 2;
+    aspect-ratio: auto;
+    border-radius: 40px;
+    text-align: left;
+    padding-left: 26px;
+}
+
+.disguise-hint {
+    font-size: 0.75rem;
+    color: #555;
+    text-align: center;
+    margin-top: 6px;
+}
+
+/* Footer */
+.ctrl-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 8px;
+}
+
+.hidden {
+    display: none !important;
+}

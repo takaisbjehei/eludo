@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>eLudo Companion - Remote Pad</title>
+    <link rel="stylesheet" href="controller.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <div class="controller-app">
+        <!-- Header -->
+        <header class="ctrl-header">
+            <div class="ctrl-brand">
+                <span class="ctrl-icon">📱</span>
+                <h1>Dice Remote</h1>
+            </div>
+            <div class="stealth-mode-btn" id="btn-stealth-toggle" title="Switch to Stealth Disguise">🕶️ Stealth</div>
+        </header>
+
+        <!-- Connection Box -->
+        <section class="connect-card" id="connect-card">
+            <div class="connect-row">
+                <input type="text" id="input-room-code" placeholder="4-Digit Room Code" maxlength="6" inputmode="numeric" />
+                <button id="btn-connect" class="btn btn-connect">Pair Device</button>
+            </div>
+            <div class="status-indicator" id="conn-status">
+                <span class="status-dot dot-yellow"></span>
+                <span id="conn-text">Enter the 4-digit code shown on the main game</span>
+            </div>
+        </section>
+
+        <!-- Main Controller View -->
+        <main class="remote-main" id="remote-main">
+            <!-- Active Game Live Monitor -->
+            <div class="live-card">
+                <div class="live-header">
+                    <span class="live-badge">🔴 LIVE GAME</span>
+                    <span class="turn-owner" id="ctrl-turn-owner">Waiting for Game...</span>
+                </div>
+                <div class="active-dice-peek">
+                    Last Main Roll: <strong id="ctrl-last-roll">-</strong>
+                </div>
+            </div>
+
+            <!-- Secret Queued Selection -->
+            <div class="selection-status-box" id="selection-status">
+                Current Mode: <strong id="active-mode-label" class="mode-highlight">🎲 Natural Random</strong>
+            </div>
+
+            <!-- Stealth Number Pad (1 to 6) -->
+            <div class="numpad-grid">
+                <button class="num-btn" data-val="1">
+                    <span class="num-digit">1</span>
+                    <span class="num-dots">⚀</span>
+                </button>
+                <button class="num-btn" data-val="2">
+                    <span class="num-digit">2</span>
+                    <span class="num-dots">⚁</span>
+                </button>
+                <button class="num-btn" data-val="3">
+                    <span class="num-digit">3</span>
+                    <span class="num-dots">⚂</span>
+                </button>
+                <button class="num-btn" data-val="4">
+                    <span class="num-digit">4</span>
+                    <span class="num-dots">⚃</span>
+                </button>
+                <button class="num-btn" data-val="5">
+                    <span class="num-digit">5</span>
+                    <span class="num-dots">⚄</span>
+                </button>
+                <button class="num-btn" data-val="6">
+                    <span class="num-digit">6</span>
+                    <span class="num-dots">⚅</span>
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="actions-grid">
+                <button id="btn-clear-force" class="btn btn-neutral">
+                    🎲 Fair Random
+                </button>
+                <button id="btn-roll-remote" class="btn btn-action">
+                    ⚡ Secret Roll Main Screen
+                </button>
+            </div>
+
+            <!-- Auto-6 Stealth Toggle -->
+            <div class="toggle-card">
+                <div class="toggle-info">
+                    <div class="toggle-title">✨ Always 6 on Base Yard</div>
+                    <div class="toggle-desc">Automatically rolls 6 when your pawns are stuck in base</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-auto-six">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </main>
+
+        <!-- Stealth Disguise View (Fake Calculator Theme) -->
+        <div class="disguise-view hidden" id="disguise-view">
+            <div class="calc-header">
+                <div class="calc-display" id="calc-display">0</div>
+            </div>
+            <div class="calc-keypad">
+                <button class="calc-btn calc-op" data-calc="C">C</button>
+                <button class="calc-btn calc-op" data-calc="±">±</button>
+                <button class="calc-btn calc-op" data-calc="%">%</button>
+                <button class="calc-btn calc-op" data-calc="÷">÷</button>
+
+                <button class="calc-btn calc-num" data-calc="7">7</button>
+                <button class="calc-btn calc-num" data-calc="8">8</button>
+                <button class="calc-btn calc-num" data-calc="9">9</button>
+                <button class="calc-btn calc-op" data-calc="×">×</button>
+
+                <button class="calc-btn calc-num" data-calc="4">4</button>
+                <button class="calc-btn calc-num" data-calc="5">5</button>
+                <button class="calc-btn calc-num" data-calc="6">6</button>
+                <button class="calc-btn calc-op" data-calc="-">-</button>
+
+                <button class="calc-btn calc-num" data-calc="1">1</button>
+                <button class="calc-btn calc-num" data-calc="2">2</button>
+                <button class="calc-btn calc-num" data-calc="3">3</button>
+                <button class="calc-btn calc-op" data-calc="+">+</button>
+
+                <button class="calc-btn calc-num calc-zero" data-calc="0">0</button>
+                <button class="calc-btn calc-num" data-calc=".">.</button>
+                <button class="calc-btn calc-op calc-equal" data-calc="=">=</button>
+            </div>
+            <div class="disguise-hint">Tapping digits 1-6 in calculator secretly queues that dice roll on Phone 1!</div>
+        </div>
+
+        <footer class="ctrl-footer">
+            <span>Room: <strong id="footer-room-code">----</strong></span>
+            <span>Status: <strong id="footer-status">Ready</strong></span>
+        </footer>
+    </div>
+
+    <script src="js/controller.js"></script>
+</body>
+</html>
