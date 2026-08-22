@@ -489,26 +489,41 @@ class LudoApp {
     }
 
     animate3DDice(rolledNumber, onFinished) {
-        this.diceCube.classList.remove('rolling');
-        void this.diceCube.offsetWidth;
+        if (this.diceRotX === undefined) {
+            this.diceRotX = -20;
+            this.diceRotY = -25;
+            this.diceRotZ = 0;
+        }
 
-        const rotations = {
-            1: 'rotateX(0deg) rotateY(0deg)',
-            2: 'rotateX(0deg) rotateY(-90deg)',
-            3: 'rotateX(-90deg) rotateY(0deg)',
-            4: 'rotateX(90deg) rotateY(0deg)',
-            5: 'rotateX(0deg) rotateY(90deg)',
-            6: 'rotateX(0deg) rotateY(180deg)'
+        const faceRotations = {
+            1: { x: 0, y: 0 },
+            2: { x: 0, y: -90 },
+            3: { x: 90, y: 0 },
+            4: { x: -90, y: 0 },
+            5: { x: 0, y: 90 },
+            6: { x: 0, y: 180 }
         };
 
-        this.diceCube.style.setProperty('--target-rot', rotations[rolledNumber] || rotations[1]);
-        this.diceCube.classList.add('rolling');
+        const halo = document.getElementById('dice-tray-halo');
+        if (halo) halo.classList.add('rolling-halo');
+
+        const target = faceRotations[rolledNumber] || faceRotations[1];
+
+        // Add 2 to 3 full rotations (720deg or 1080deg) for fluid tumbling physics
+        const spinsX = (Math.floor(Math.random() * 2) + 2) * 360;
+        const spinsY = (Math.floor(Math.random() * 2) + 2) * 360;
+
+        // Calculate continuous smooth target angles
+        this.diceRotX = (Math.floor(this.diceRotX / 360) * 360) + spinsX + target.x;
+        this.diceRotY = (Math.floor(this.diceRotY / 360) * 360) + spinsY + target.y;
+
+        this.diceCube.style.transition = 'transform 0.75s cubic-bezier(0.12, 0.85, 0.2, 1.06)';
+        this.diceCube.style.transform = `rotateX(${this.diceRotX}deg) rotateY(${this.diceRotY}deg)`;
 
         setTimeout(() => {
-            this.diceCube.style.transform = rotations[rolledNumber];
-            this.diceCube.classList.remove('rolling');
+            if (halo) halo.classList.remove('rolling-halo');
             if (onFinished) onFinished();
-        }, 620);
+        }, 760);
     }
 
     showToast(message, duration = 1800) {
