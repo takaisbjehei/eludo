@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>eLudo Companion - Stealth Remote</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dice Remote">
+    <title>eLudo Companion - Remote Pad</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="controller.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
     <div class="controller-app">
-        <!-- Header -->
-        <header class="ctrl-header">
+        <!-- Header (Tap 5 times to switch stealth mode) -->
+        <header class="ctrl-header" id="ctrl-header-bar" title="Tap 5 times to switch disguise">
             <div class="ctrl-brand">
                 <span class="ctrl-icon">📱</span>
                 <h1>eLudo Controller</h1>
@@ -36,10 +41,15 @@
             <div class="live-card">
                 <div class="live-header">
                     <span class="live-badge">🔴 LIVE GAME</span>
+                    <span class="live-mode-tag" id="ctrl-mode-tag">2 Players</span>
                     <span class="turn-owner" id="ctrl-turn-owner">Connecting...</span>
                 </div>
                 <div class="active-dice-peek">
                     Last Roll: <strong id="ctrl-last-roll">-</strong>
+                </div>
+                <!-- Live Pawns Progress Summary -->
+                <div class="live-pawn-summary" id="live-pawn-summary">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
 
@@ -47,23 +57,23 @@
             <div class="target-color-card">
                 <div class="target-title">🎯 Control Dice For:</div>
                 <div class="color-target-grid">
-                    <button class="target-btn active" data-color="any">
+                    <button class="target-btn active" id="target-btn-any" data-color="any">
                         <span class="target-icon">🎲</span>
                         <span class="target-label">Any Turn</span>
                     </button>
-                    <button class="target-btn" data-color="red">
+                    <button class="target-btn" id="target-btn-red" data-color="red">
                         <span class="color-dot red-bg"></span>
                         <span class="target-label">Red</span>
                     </button>
-                    <button class="target-btn" data-color="green">
+                    <button class="target-btn" id="target-btn-green" data-color="green">
                         <span class="color-dot green-bg"></span>
                         <span class="target-label">Green</span>
                     </button>
-                    <button class="target-btn" data-color="yellow">
+                    <button class="target-btn" id="target-btn-yellow" data-color="yellow">
                         <span class="color-dot yellow-bg"></span>
                         <span class="target-label">Yellow</span>
                     </button>
-                    <button class="target-btn" data-color="blue">
+                    <button class="target-btn" id="target-btn-blue" data-color="blue">
                         <span class="color-dot blue-bg"></span>
                         <span class="target-label">Blue</span>
                     </button>
@@ -166,5 +176,10 @@
     </div>
 
     <script src="js/controller.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
+        }
+    </script>
 </body>
 </html>

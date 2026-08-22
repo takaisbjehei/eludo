@@ -195,18 +195,35 @@ class LudoApp {
             this.startNewGame();
         });
 
-        // Stealth Code popup
+        // Stealth 5-Tap Gesture on Logo or Crown
         const stealthBtn = document.getElementById('stealth-code-btn');
         const logoBadge = document.getElementById('logo-badge');
+        const centerHome = document.getElementById('center-home');
         const modalSync = document.getElementById('modal-sync');
         const btnCloseSync = document.getElementById('btn-close-sync');
 
-        stealthBtn.addEventListener('click', (e) => {
+        let tapCount = 0;
+        let tapTimer = null;
+
+        const handleSecretTap = (e) => {
+            if (e) e.stopPropagation();
+            tapCount++;
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => { tapCount = 0; }, 2200);
+
+            if (tapCount >= 5) {
+                tapCount = 0;
+                this.openSyncModal();
+            }
+        };
+
+        if (logoBadge) logoBadge.addEventListener('click', handleSecretTap);
+        if (centerHome) centerHome.addEventListener('click', handleSecretTap);
+        if (stealthBtn) stealthBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.openSyncModal();
         });
-        logoBadge.addEventListener('click', () => this.openSyncModal());
-        btnCloseSync.addEventListener('click', () => modalSync.classList.add('hidden'));
+        if (btnCloseSync) btnCloseSync.addEventListener('click', () => modalSync.classList.add('hidden'));
 
         // Victory Play Again
         document.getElementById('btn-play-again').addEventListener('click', () => {

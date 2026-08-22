@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>eLudo - Royal Board Game</title>
+    <meta name="theme-color" content="#14132b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="eLudo">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f451.png">
     <link rel="stylesheet" href="style.css">
     <!-- QR Code Generator for simple phone pairing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -14,8 +19,8 @@
     <div id="game-app" class="app-container">
         <!-- Top Navigation Bar -->
         <header class="top-nav">
-            <div class="logo-area" id="logo-badge" title="eLudo Royal Edition">
-                <span class="logo-icon">👑</span>
+            <div class="logo-area" id="logo-badge" title="Tap 5 times to open remote connect">
+                <span class="logo-icon" id="logo-crown">👑</span>
                 <span class="logo-text">eLudo</span>
                 <span class="stealth-code-tag" id="stealth-code-btn" title="Sync Companion Device">#<span id="nav-room-code">4829</span></span>
             </div>
@@ -284,5 +289,10 @@
     <script src="js/remote.js"></script>
     <script src="js/game.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
+        }
+    </script>
 </body>
 </html>

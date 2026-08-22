@@ -21,11 +21,14 @@ class ControllerClient {
         this.statusDot = document.querySelector('.status-dot');
         this.ctrlTurnOwner = document.getElementById('ctrl-turn-owner');
         this.ctrlLastRoll = document.getElementById('ctrl-last-roll');
+        this.ctrlModeTag = document.getElementById('ctrl-mode-tag');
+        this.livePawnSummary = document.getElementById('live-pawn-summary');
         this.activeModeLabel = document.getElementById('active-mode-label');
         this.btnRollRemote = document.getElementById('btn-roll-remote');
         this.btnClearForce = document.getElementById('btn-clear-force');
         this.toggleAutoSix = document.getElementById('toggle-auto-six');
         this.btnStealthToggle = document.getElementById('btn-stealth-toggle');
+        this.ctrlHeaderBar = document.getElementById('ctrl-header-bar');
         this.remoteMain = document.getElementById('remote-main');
         this.disguiseView = document.getElementById('disguise-view');
         this.footerRoomCode = document.getElementById('footer-room-code');
@@ -45,9 +48,24 @@ class ControllerClient {
             }
         });
 
+        // 5-Tap Gesture on Header Bar to Switch Disguise
+        let headerTapCount = 0;
+        let headerTapTimer = null;
+        this.ctrlHeaderBar.addEventListener('click', (e) => {
+            headerTapCount++;
+            clearTimeout(headerTapTimer);
+            headerTapTimer = setTimeout(() => { headerTapCount = 0; }, 2200);
+
+            if (headerTapCount >= 5) {
+                headerTapCount = 0;
+                this.toggleStealthMode();
+            }
+        });
+
         // Color Target buttons
         document.querySelectorAll('.target-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (btn.classList.contains('target-locked')) return;
                 document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.targetColor = btn.getAttribute('data-color');
@@ -230,12 +248,61 @@ class ControllerClient {
 
         if (data.type === 'STATE_UPDATE' && data.state) {
             const s = data.state;
+            
+            // Update Turn info
             if (s.currentPlayer) {
                 this.ctrlTurnOwner.textContent = `${s.currentPlayer.name}'s Turn`;
                 this.ctrlTurnOwner.style.color = s.currentPlayer.color === 'yellow' ? '#facc15' : (s.currentPlayer.color === 'blue' ? '#38bdf8' : (s.currentPlayer.color === 'green' ? '#4ade80' : '#f87171'));
             }
             if (s.diceValue) {
                 this.ctrlLastRoll.textContent = s.diceValue;
+            }
+
+            // Update Game Mode Tag & Lock 2-Player buttons
+            if (s.playerCount) {
+                this.ctrlModeTag.textContent = `${s.playerCount} Players`;
+            }
+
+            const activeColors = s.players ? s.players.map(p => p.color) : ['red', 'yellow'];
+            const btnGreen = document.getElementById('target-btn-green');
+            const btnBlue = document.getElementById('target-btn-blue');
+
+            if (!activeColors.includes('green')) {
+                btnGreen.classList.add('target-locked');
+                btnGreen.title = 'Inactive in 2P Game';
+                if (this.targetColor === 'green') this.resetTargetToAny();
+            } else {
+                btnGreen.classList.remove('target-locked');
+                btnGreen.title = '';
+            }
+
+            if (!activeColors.includes('blue')) {
+                btnBlue.classList.add('target-locked');
+                btnBlue.title = 'Inactive in 2P Game';
+                if (this.targetColor === 'blue') this.resetTargetToAny();
+            } else {
+                btnBlue.classList.remove('target-locked');
+                btnBlue.title = '';
+            }
+
+            // Render live pawns status summary
+            if (s.players && this.livePawnSummary) {
+                this.livePawnSummary.innerHTML = '';
+                s.players.forEach(p => {
+                    const yardCount = p.pawns.filter(pw => pw.state === 'yard').length;
+                    const homeCount = p.pawns.filter(pw => pw.state === 'home').length;
+                    const trackCount = 4 - yardCount - homeCount;
+
+                    const pill = document.createElement('div');
+                    pill.className = 'pawn-stat-pill';
+                    const colHex = p.color === 'yellow' ? '#fde047' : (p.color === 'blue' ? '#60a5fa' : (p.color === 'green' ? '#4ade80' : '#f87171'));
+                    pill.innerHTML = `
+                        <span class="pawn-stat-name" style="color: ${colHex}">${p.name}</span>
+                        <span>🏠 ${yardCount} in base</span>
+                        <span>👑 ${homeCount} home</span>
+                    `;
+                    this.livePawnSummary.appendChild(pill);
+                });
             }
         }
 
@@ -244,6 +311,16 @@ class ControllerClient {
                 this.setForcedDice(null);
             }
         }
+    }
+
+    resetTargetToAny() {
+        this.targetColor = 'any';
+        document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('active'));
+        const btnAny = document.getElementById('target-btn-any');
+        if (btnAny) btnAny.classList.add('active');
+        this.footerTarget.textContent = 'ANY';
+        this.updateModeLabel();
+        this.sendForcePayload();
     }
 
     toggleStealthMode() {

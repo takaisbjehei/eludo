@@ -1,0 +1,27 @@
+{
+  "name": "eLudo Royal Board Game",
+  "short_name": "eLudo",
+  "description": "Royal Ludo Tournament Board Game with 3D Physics Dice",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#14132b",
+  "theme_color": "#e52521",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f451.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f3b2.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f3b2.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

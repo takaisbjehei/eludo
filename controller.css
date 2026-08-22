@@ -165,8 +165,23 @@ body {
     border-radius: var(--radius-lg);
     padding: 12px 14px;
     display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.live-header {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.live-mode-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    padding: 2px 6px;
+    border-radius: 6px;
 }
 
 .live-badge {
@@ -192,6 +207,29 @@ body {
 .active-dice-peek strong {
     font-size: 1.15rem;
     color: var(--accent-blue);
+}
+
+.live-pawn-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 6px;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pawn-stat-pill {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 0.72rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pawn-stat-name {
+    font-weight: 700;
 }
 
 /* Target Color Selection */
@@ -238,6 +276,14 @@ body {
     background: rgba(56, 189, 248, 0.15);
     color: #ffffff;
     box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.target-btn.target-locked {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(0.8);
+    background: #080c14;
+    border-color: #1e293b;
 }
 
 .color-dot {
