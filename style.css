@@ -382,7 +382,7 @@ body {
     box-shadow: 0 0 0 2px var(--color-yellow);
 }
 
-/* Solid Colored Slot Disc underneath pawn when empty (matching reference image) */
+/* Solid Colored Slot Disc underneath pawn when empty */
 .slot-disc {
     width: 65%;
     height: 65%;
@@ -484,7 +484,7 @@ body {
 }
 
 /* ==========================================
-   Pawns Layer & Perfectly Centered Vector Pin Tokens
+   Pawns Layer & Bold Upright Pin Tokens
    ========================================== */
 .pawns-layer {
     position: absolute;
@@ -505,18 +505,18 @@ body {
     align-items: center;
     pointer-events: auto;
     cursor: default;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -64%);
     transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.16s ease, left 0.16s ease;
 }
 
 .pawn-marker {
-    width: 86%;
-    height: 96%;
+    width: 110%;
+    height: 125%;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.55));
     transition: transform 0.2s ease;
 }
 
@@ -534,12 +534,12 @@ body {
 
 .pawn-pin.movable .pawn-marker {
     animation: pawnBreathe 0.55s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
-    filter: drop-shadow(0 0 10px #fde047) drop-shadow(0 6px 12px rgba(0,0,0,0.7));
+    filter: drop-shadow(0 0 14px #fde047) drop-shadow(0 8px 14px rgba(0,0,0,0.8));
 }
 
 @keyframes pawnBreathe {
     0% { transform: translateY(0) scale(1); }
-    100% { transform: translateY(-7px) scale(1.18); }
+    100% { transform: translateY(-8px) scale(1.18); }
 }
 
 /* ==========================================

@@ -446,7 +446,7 @@ class LudoApp {
 
                 pawnEl.style.left = `${item.targetPos.xPercent}%`;
                 pawnEl.style.top = `${item.targetPos.yPercent}%`;
-                pawnEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
+                pawnEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-64% + ${offsetY}px)) scale(${scale})`;
             });
         });
 
