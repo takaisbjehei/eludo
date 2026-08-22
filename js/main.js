@@ -12,7 +12,7 @@ class LudoApp {
         this.turnText = document.getElementById('turn-text');
         this.toastBanner = document.getElementById('toast-banner');
 
-        this.selectedPlayerCount = 2; // Default to 2 players
+        this.selectedPlayerCount = 2;
         this.playerTypes = { red: false, green: false, yellow: false, blue: false };
 
         this.pawnElements = new Map();
@@ -23,6 +23,10 @@ class LudoApp {
         this.initGameEngineHooks();
         this.applySetupModeUI(2);
         this.startNewGame();
+
+        window.addEventListener('resize', () => {
+            this.updatePawnPositions();
+        });
     }
 
     initBoardStructure() {
@@ -281,7 +285,6 @@ class LudoApp {
     startNewGame() {
         this.game.initGame(this.selectedPlayerCount, this.playerTypes);
 
-        // Update Inactive Yard styling on board
         const yardGreen = document.getElementById('yard-green');
         const yardBlue = document.getElementById('yard-blue');
 
@@ -302,18 +305,28 @@ class LudoApp {
         this.pawnsLayer.innerHTML = '';
         this.pawnElements.clear();
 
+        const colorHexMap = {
+            red: '#e52521',
+            green: '#009746',
+            yellow: '#fec006',
+            blue: '#00a2ed'
+        };
+
         this.game.players.forEach(player => {
+            const hex = colorHexMap[player.color] || '#e52521';
             player.pawns.forEach(pawn => {
                 const pawnEl = document.createElement('div');
                 pawnEl.className = `pawn-pin ${player.color}`;
                 pawnEl.dataset.color = player.color;
                 pawnEl.dataset.pawnId = pawn.id;
 
+                // High fidelity teardrop map pin SVG
                 pawnEl.innerHTML = `
                     <div class="pawn-marker">
-                        <div class="pawn-pin-shape">
-                            <div class="pawn-pin-core"></div>
-                        </div>
+                        <svg viewBox="0 0 32 40" class="pawn-pin-svg">
+                            <path d="M 16 38 C 16 38 4 23 4 14 A 12 12 0 1 1 28 14 C 28 23 16 38 16 38 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.6" />
+                            <circle cx="16" cy="14" r="7.5" fill="${hex}" />
+                        </svg>
                     </div>
                 `;
 
@@ -332,29 +345,64 @@ class LudoApp {
         });
     }
 
+    getTargetCoordPercent(pawn, player) {
+        if (pawn.state === 'yard') {
+            const slotEl = document.getElementById(`slot-${player.color}-${pawn.slotIndex}`);
+            const boardRect = this.boardEl.getBoundingClientRect();
+            if (slotEl && boardRect.width > 0) {
+                const slotRect = slotEl.getBoundingClientRect();
+                const cx = (slotRect.left + slotRect.width / 2) - boardRect.left;
+                const cy = (slotRect.top + slotRect.height / 2) - boardRect.top;
+                return {
+                    xPercent: (cx / boardRect.width) * 100,
+                    yPercent: (cy / boardRect.height) * 100
+                };
+            }
+            // Fallback
+            const baseCol = (player.color === 'green' || player.color === 'yellow') ? 9 : 0;
+            const baseRow = (player.color === 'blue' || player.color === 'yellow') ? 9 : 0;
+            const slotX = (pawn.slotIndex % 2 === 0) ? 2.0 : 4.0;
+            const slotY = (pawn.slotIndex < 2) ? 2.0 : 4.0;
+            return {
+                xPercent: ((baseCol + slotX) / 15) * 100,
+                yPercent: ((baseRow + slotY) / 15) * 100
+            };
+        } else if (pawn.state === 'track') {
+            const coord = TRACK_COORDS[pawn.trackIndex];
+            return {
+                xPercent: ((coord.c + 0.5) / 15) * 100,
+                yPercent: ((coord.r + 0.5) / 15) * 100
+            };
+        } else if (pawn.state === 'homeStretch') {
+            const coord = COLOR_CONFIG[player.color].homeStretch[pawn.step - 51];
+            return {
+                xPercent: ((coord.c + 0.5) / 15) * 100,
+                yPercent: ((coord.r + 0.5) / 15) * 100
+            };
+        } else if (pawn.state === 'home') {
+            const coord = COLOR_CONFIG[player.color].homeCenter;
+            return {
+                xPercent: ((coord.c + 0.5) / 15) * 100,
+                yPercent: ((coord.r + 0.5) / 15) * 100
+            };
+        }
+    }
+
     updatePawnPositions() {
         const locationMap = new Map();
 
         this.game.players.forEach(player => {
             player.pawns.forEach(pawn => {
                 let locKey = '';
-                let targetPos = { r: 0, c: 0 };
+                const targetPos = this.getTargetCoordPercent(pawn, player);
 
                 if (pawn.state === 'yard') {
-                    const yardCoord = COLOR_CONFIG[player.color].yardSlotCoords[pawn.slotIndex];
-                    targetPos = { r: yardCoord.r, c: yardCoord.c };
                     locKey = `yard_${player.color}_${pawn.slotIndex}`;
                 } else if (pawn.state === 'track') {
-                    const coord = TRACK_COORDS[pawn.trackIndex];
-                    targetPos = { r: coord.r, c: coord.c };
                     locKey = `track_${pawn.trackIndex}`;
                 } else if (pawn.state === 'homeStretch') {
-                    const coord = COLOR_CONFIG[player.color].homeStretch[pawn.step - 51];
-                    targetPos = { r: coord.r, c: coord.c };
                     locKey = `homestretch_${player.color}_${pawn.step}`;
                 } else if (pawn.state === 'home') {
-                    const coord = COLOR_CONFIG[player.color].homeCenter;
-                    targetPos = { r: coord.r, c: coord.c };
                     locKey = `home_${player.color}`;
                 }
 
@@ -392,16 +440,13 @@ class LudoApp {
                 if (count > 1 && item.pawn.state !== 'yard') {
                     scale = count === 2 ? 0.78 : 0.65;
                     const angle = (index / count) * (2 * Math.PI);
-                    offsetX = Math.cos(angle) * 16;
-                    offsetY = Math.sin(angle) * 16;
+                    offsetX = Math.cos(angle) * 14;
+                    offsetY = Math.sin(angle) * 14;
                 }
 
-                const leftPercent = (item.targetPos.c / 15) * 100;
-                const topPercent = (item.targetPos.r / 15) * 100;
-
-                pawnEl.style.left = `${leftPercent}%`;
-                pawnEl.style.top = `${topPercent}%`;
-                pawnEl.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+                pawnEl.style.left = `${item.targetPos.xPercent}%`;
+                pawnEl.style.top = `${item.targetPos.yPercent}%`;
+                pawnEl.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) scale(${scale})`;
             });
         });
 

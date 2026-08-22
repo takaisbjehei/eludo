@@ -329,10 +329,9 @@ body {
     background-color: var(--color-yellow);
 }
 
-/* Inactive Yard in 2P mode */
 .yard.yard-inactive {
-    opacity: 0.35;
-    filter: grayscale(0.6);
+    opacity: 0.3;
+    filter: grayscale(0.7);
 }
 
 .yard-box {
@@ -485,7 +484,7 @@ body {
 }
 
 /* ==========================================
-   Pawns Layer & Sleek Marker Pin Design
+   Pawns Layer & Perfectly Centered Vector Pin Tokens
    ========================================== */
 .pawns-layer {
     position: absolute;
@@ -506,45 +505,26 @@ body {
     align-items: center;
     pointer-events: auto;
     cursor: default;
+    transform: translate(-50%, -50%);
     transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.16s ease, left 0.16s ease;
 }
 
 .pawn-marker {
-    width: 82%;
-    height: 92%;
+    width: 86%;
+    height: 96%;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45));
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
     transition: transform 0.2s ease;
 }
 
-/* Teardrop Pin Marker SVG Shape */
-.pawn-pin-shape {
+.pawn-pin-svg {
     width: 100%;
     height: 100%;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    background: #ffffff;
-    border: 2px solid #e2e8f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    display: block;
 }
-
-.pawn-pin-core {
-    width: 62%;
-    height: 62%;
-    border-radius: 50%;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.pawn-pin.red .pawn-pin-core { background: radial-gradient(circle, #ff6b6b 30%, var(--color-red) 100%); }
-.pawn-pin.green .pawn-pin-core { background: radial-gradient(circle, #4ade80 30%, var(--color-green) 100%); }
-.pawn-pin.yellow .pawn-pin-core { background: radial-gradient(circle, #fde047 30%, var(--color-yellow) 100%); }
-.pawn-pin.blue .pawn-pin-core { background: radial-gradient(circle, #60a5fa 30%, var(--color-blue) 100%); }
 
 /* Movable Interactive Highlight & Bouncing */
 .pawn-pin.movable {
@@ -554,12 +534,12 @@ body {
 
 .pawn-pin.movable .pawn-marker {
     animation: pawnBreathe 0.55s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
-    filter: drop-shadow(0 0 12px #fde047) drop-shadow(0 6px 12px rgba(0,0,0,0.7));
+    filter: drop-shadow(0 0 10px #fde047) drop-shadow(0 6px 12px rgba(0,0,0,0.7));
 }
 
 @keyframes pawnBreathe {
     0% { transform: translateY(0) scale(1); }
-    100% { transform: translateY(-8px) scale(1.2); }
+    100% { transform: translateY(-7px) scale(1.18); }
 }
 
 /* ==========================================
@@ -642,7 +622,6 @@ body {
     align-self: center;
 }
 
-/* 3D Cube Faces Positioning */
 .face-1 { transform: rotateY(0deg) translateZ(30px); }
 .face-6 { transform: rotateY(180deg) translateZ(30px); }
 .face-2 { transform: rotateY(90deg) translateZ(30px); }
@@ -650,7 +629,6 @@ body {
 .face-3 { transform: rotateX(90deg) translateZ(30px); }
 .face-4 { transform: rotateX(-90deg) translateZ(30px); }
 
-/* Dice Rolling Animation */
 .dice-cube.rolling {
     animation: rollDiceAnim 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
