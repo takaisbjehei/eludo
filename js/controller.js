@@ -7,6 +7,7 @@ class ControllerClient {
         this.conn = null;
         this.channel = null;
         this.activeForcedValue = null;
+        this.targetColor = 'any'; // 'any', 'red', 'green', 'yellow', 'blue'
         this.isStealthDisguise = false;
 
         this.initDOM();
@@ -28,7 +29,7 @@ class ControllerClient {
         this.remoteMain = document.getElementById('remote-main');
         this.disguiseView = document.getElementById('disguise-view');
         this.footerRoomCode = document.getElementById('footer-room-code');
-        this.footerStatus = document.getElementById('footer-status');
+        this.footerTarget = document.getElementById('footer-target');
         this.calcDisplay = document.getElementById('calc-display');
 
         // Bind events
@@ -42,6 +43,18 @@ class ControllerClient {
                 const val = this.inputRoomCode.value.trim();
                 if (val) this.connectToRoom(val);
             }
+        });
+
+        // Color Target buttons
+        document.querySelectorAll('.target-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.targetColor = btn.getAttribute('data-color');
+                this.footerTarget.textContent = this.targetColor.toUpperCase();
+                this.updateModeLabel();
+                this.sendForcePayload();
+            });
         });
 
         // Number buttons (1-6)
@@ -66,7 +79,8 @@ class ControllerClient {
         this.toggleAutoSix.addEventListener('change', (e) => {
             this.sendMessage({
                 type: 'TOGGLE_AUTO_SIX',
-                enabled: e.target.checked
+                enabled: e.target.checked,
+                targetColor: this.targetColor
             });
         });
 
@@ -84,7 +98,6 @@ class ControllerClient {
     }
 
     parseURLRoomCode() {
-        // Look for #room=XXXX or ?room=XXXX in URL
         const hash = window.location.hash;
         const params = new URLSearchParams(window.location.search);
         let code = params.get('room');
@@ -105,7 +118,6 @@ class ControllerClient {
         this.footerRoomCode.textContent = this.roomCode;
         this.updateStatus('yellow', `Connecting to #${this.roomCode}...`);
 
-        // Connect BroadcastChannel (Local / same machine)
         if ('BroadcastChannel' in window) {
             if (this.channel) this.channel.close();
             this.channel = new BroadcastChannel('eludo_remote_' + this.roomCode);
@@ -113,7 +125,6 @@ class ControllerClient {
             this.channel.postMessage({ type: 'REQUEST_STATE' });
         }
 
-        // Connect PeerJS over public internet
         if (typeof Peer !== 'undefined') {
             try {
                 if (this.peer) this.peer.destroy();
@@ -133,7 +144,6 @@ class ControllerClient {
 
                     this.conn.on('open', () => {
                         this.updateStatus('green', `Paired with #${this.roomCode}`);
-                        this.footerStatus.textContent = 'Connected (WebRTC)';
                         this.sendMessage({ type: 'REQUEST_STATE' });
                     });
 
@@ -142,13 +152,12 @@ class ControllerClient {
                     });
 
                     this.conn.on('close', () => {
-                        this.updateStatus('red', 'Disconnected from Game');
+                        this.updateStatus('red', 'Disconnected');
                     });
                 });
 
                 this.peer.on('error', (err) => {
-                    console.warn('Peer connection error:', err);
-                    // Fallback to channel status
+                    console.warn('Peer connection notice:', err);
                     this.updateStatus('green', `Paired locally #${this.roomCode}`);
                 });
             } catch (e) {
@@ -176,7 +185,6 @@ class ControllerClient {
     setForcedDice(val) {
         this.activeForcedValue = val;
 
-        // Update UI
         document.querySelectorAll('.num-btn').forEach(btn => {
             const btnVal = parseInt(btn.getAttribute('data-val'), 10);
             if (btnVal === val) {
@@ -186,24 +194,34 @@ class ControllerClient {
             }
         });
 
-        if (val === null) {
-            this.activeModeLabel.textContent = '🎲 Natural Random';
+        this.updateModeLabel();
+        this.sendForcePayload();
+    }
+
+    updateModeLabel() {
+        const targetStr = this.targetColor === 'any' ? 'Any Player' : this.targetColor.toUpperCase();
+        if (this.activeForcedValue === null) {
+            this.activeModeLabel.textContent = `🎲 Fair Random (${targetStr})`;
             this.activeModeLabel.style.color = '#38bdf8';
         } else {
-            this.activeModeLabel.textContent = `🎯 Forced Next: [ ${val} ]`;
+            this.activeModeLabel.textContent = `🎯 Forced [ ${this.activeForcedValue} ] for ${targetStr}`;
             this.activeModeLabel.style.color = '#4ade80';
         }
+    }
 
+    sendForcePayload() {
         this.sendMessage({
             type: 'FORCE_DICE',
-            value: val
+            value: this.activeForcedValue,
+            targetColor: this.targetColor
         });
     }
 
     triggerRemoteRoll() {
         this.sendMessage({
             type: 'TRIGGER_ROLL',
-            value: this.activeForcedValue
+            value: this.activeForcedValue,
+            targetColor: this.targetColor
         });
     }
 
@@ -214,7 +232,7 @@ class ControllerClient {
             const s = data.state;
             if (s.currentPlayer) {
                 this.ctrlTurnOwner.textContent = `${s.currentPlayer.name}'s Turn`;
-                this.ctrlTurnOwner.style.color = s.currentPlayer.color === 'yellow' ? '#facc15' : s.currentPlayer.color;
+                this.ctrlTurnOwner.style.color = s.currentPlayer.color === 'yellow' ? '#facc15' : (s.currentPlayer.color === 'blue' ? '#38bdf8' : (s.currentPlayer.color === 'green' ? '#4ade80' : '#f87171'));
             }
             if (s.diceValue) {
                 this.ctrlLastRoll.textContent = s.diceValue;
@@ -223,7 +241,6 @@ class ControllerClient {
 
         if (data.type === 'CONFIRM_FORCE') {
             if (data.value === null && this.activeForcedValue !== null) {
-                // One-time roll was consumed by game
                 this.setForcedDice(null);
             }
         }
@@ -250,7 +267,6 @@ class ControllerClient {
         }
 
         if (['1', '2', '3', '4', '5', '6'].includes(val)) {
-            // Secretly queue this dice roll in disguise mode!
             const num = parseInt(val, 10);
             this.setForcedDice(num);
         }

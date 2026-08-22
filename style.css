@@ -1,22 +1,22 @@
 /* ==========================================================================
    eLudo Royal Board Game - Master Stylesheet
-   Matching Reference Design: Red (Top-Left), Green (Top-Right), Blue (Bottom-Left), Yellow (Bottom-Right)
+   High-Fidelity Match: Red (Top-Left), Green (Top-Right), Blue (Bottom-Left), Yellow (Bottom-Right)
    ========================================================================== */
 
 :root {
     --color-red: #e52521;
-    --color-red-light: #ff4d4d;
+    --color-red-dark: #8b0000;
     --color-green: #009746;
-    --color-green-light: #2ecc71;
+    --color-green-dark: #004d20;
     --color-yellow: #fec006;
-    --color-yellow-light: #ffd54f;
+    --color-yellow-dark: #a07800;
     --color-blue: #00a2ed;
-    --color-blue-light: #4fc3f7;
+    --color-blue-dark: #005885;
 
     --board-bg: #ffffff;
-    --grid-line: #dcdde1;
-    --app-bg: #1e1b4b;
-    --card-bg: rgba(30, 41, 59, 0.85);
+    --grid-line: #b0b8c0;
+    --app-bg: #14132b;
+    --card-bg: rgba(26, 29, 58, 0.9);
     --hud-border: rgba(255, 255, 255, 0.12);
 }
 
@@ -31,7 +31,7 @@
 }
 
 body {
-    background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 100%);
+    background: radial-gradient(circle at 50% 20%, #1a1638 0%, #0d0c1d 100%);
     color: #ffffff;
     min-height: 100vh;
     display: flex;
@@ -46,7 +46,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding: 10px 16px;
+    padding: 8px 14px;
 }
 
 /* ==========================================
@@ -59,10 +59,10 @@ body {
     background: var(--card-bg);
     backdrop-filter: blur(12px);
     border: 1px solid var(--hud-border);
-    border-radius: 16px;
-    padding: 8px 18px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    margin-bottom: 12px;
+    border-radius: 14px;
+    padding: 8px 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    margin-bottom: 8px;
 }
 
 .logo-area {
@@ -73,11 +73,11 @@ body {
 }
 
 .logo-icon {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
 }
 
 .logo-text {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: 0.5px;
     background: linear-gradient(135deg, #fec006, #ff4d4d);
@@ -91,7 +91,7 @@ body {
     color: #94a3b8;
     background: rgba(255, 255, 255, 0.08);
     padding: 3px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -111,10 +111,10 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 16px;
+    padding: 5px 16px;
     border-radius: 30px;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     transition: all 0.3s ease;
 }
@@ -127,11 +127,11 @@ body {
     box-shadow: 0 0 8px #fff;
 }
 
-.red-turn { background: linear-gradient(135deg, var(--color-red), var(--color-red-light)); }
-.green-turn { background: linear-gradient(135deg, var(--color-green), var(--color-green-light)); }
-.yellow-turn { background: linear-gradient(135deg, var(--color-yellow), var(--color-yellow-light)); color: #1e293b; }
+.red-turn { background: linear-gradient(135deg, var(--color-red), #ff4d4d); }
+.green-turn { background: linear-gradient(135deg, var(--color-green), #2ecc71); }
+.yellow-turn { background: linear-gradient(135deg, var(--color-yellow), #ffd54f); color: #1e293b; }
 .yellow-turn .dot { background: #1e293b; box-shadow: 0 0 8px #1e293b; }
-.blue-turn { background: linear-gradient(135deg, var(--color-blue), var(--color-blue-light)); }
+.blue-turn { background: linear-gradient(135deg, var(--color-blue), #4fc3f7); }
 
 .header-actions {
     display: flex;
@@ -140,13 +140,13 @@ body {
 }
 
 .icon-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--hud-border);
-    border-radius: 12px;
+    border-radius: 10px;
     color: white;
-    width: 38px;
-    height: 38px;
-    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.05rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -155,16 +155,16 @@ body {
 }
 
 .icon-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.18);
     transform: translateY(-2px);
 }
 
 .btn {
     border: none;
-    border-radius: 12px;
-    padding: 8px 16px;
+    border-radius: 10px;
+    padding: 8px 14px;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -181,49 +181,48 @@ body {
 }
 
 /* ==========================================
-   Main Game Area
+   Main Game Area & Player Cards
    ========================================== */
 .game-main {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
     position: relative;
 }
 
-/* HUD Panels for Player Cards */
 .hud-panel {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 20px;
-    width: 170px;
+    gap: 16px;
+    width: 165px;
 }
 
 .player-card {
     background: var(--card-bg);
     border: 1px solid var(--hud-border);
-    border-radius: 16px;
-    padding: 12px;
+    border-radius: 14px;
+    padding: 10px;
     display: flex;
     align-items: center;
     gap: 10px;
     position: relative;
     transition: all 0.3s ease;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .player-card.active {
     opacity: 1;
     border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
-    transform: scale(1.04);
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.4);
+    transform: scale(1.03);
 }
 
 .avatar-ring {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -232,8 +231,8 @@ body {
 }
 
 .player-color-dot {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -245,19 +244,19 @@ body {
 .blue-bg { background-color: var(--color-blue); }
 
 .player-name {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 700;
 }
 
 .player-meta {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: #94a3b8;
 }
 
 .active-arrow {
     margin-left: auto;
     color: #38bdf8;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     opacity: 0;
     transition: opacity 0.3s;
 }
@@ -273,22 +272,23 @@ body {
 }
 
 /* ==========================================
-   Ludo Board Stage (15x15 Grid)
+   Exact Ludo Board Stage (15x15 Grid)
    ========================================== */
 .board-stage {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     position: relative;
 }
 
 .ludo-board {
-    width: min(82vw, 82vh, 600px);
-    height: min(82vw, 82vh, 600px);
+    width: min(84vw, 84vh, 580px);
+    height: min(84vw, 84vh, 580px);
     background: var(--board-bg);
-    border-radius: 18px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 6px rgba(255, 255, 255, 0.1);
+    border: 3px solid #334155;
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     display: grid;
     grid-template-columns: repeat(15, 1fr);
     grid-template-rows: repeat(15, 1fr);
@@ -298,11 +298,11 @@ body {
 
 /* Yards (6x6 Corner Bases) */
 .yard {
-    padding: 6%;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
+    padding: 7%;
 }
 
 .yard-red {
@@ -329,19 +329,26 @@ body {
     background-color: var(--color-yellow);
 }
 
+/* Inactive Yard in 2P mode */
+.yard.yard-inactive {
+    opacity: 0.35;
+    filter: grayscale(0.6);
+}
+
 .yard-box {
     width: 100%;
     height: 100%;
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: 8px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     padding: 10%;
     gap: 16%;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
+/* Yard Circular Token Slots with Concentric Rings matching image */
 .yard-slot {
     width: 100%;
     height: 100%;
@@ -349,28 +356,45 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
 }
 
 .yard-red .yard-slot {
-    background: radial-gradient(circle, var(--color-red) 55%, #b91c1c 100%);
-    border: 3px solid #fca5a5;
+    background: #ffffff;
+    border: 3px solid #8b0000;
+    box-shadow: 0 0 0 2px var(--color-red);
 }
 
 .yard-green .yard-slot {
-    background: radial-gradient(circle, var(--color-green) 55%, #15803d 100%);
-    border: 3px solid #86efac;
+    background: #ffffff;
+    border: 3px solid #004d20;
+    box-shadow: 0 0 0 2px var(--color-green);
 }
 
 .yard-blue .yard-slot {
-    background: radial-gradient(circle, var(--color-blue) 55%, #0369a1 100%);
-    border: 3px solid #7dd3fc;
+    background: #ffffff;
+    border: 3px solid #005885;
+    box-shadow: 0 0 0 2px var(--color-blue);
 }
 
 .yard-yellow .yard-slot {
-    background: radial-gradient(circle, var(--color-yellow) 55%, #b45309 100%);
-    border: 3px solid #fde047;
+    background: #ffffff;
+    border: 3px solid #a07800;
+    box-shadow: 0 0 0 2px var(--color-yellow);
 }
+
+/* Solid Colored Slot Disc underneath pawn when empty (matching reference image) */
+.slot-disc {
+    width: 65%;
+    height: 65%;
+    border-radius: 50%;
+    opacity: 0.95;
+}
+
+.red-disc { background: var(--color-red); }
+.green-disc { background: var(--color-green); }
+.blue-disc { background: var(--color-blue); }
+.yellow-disc { background: var(--color-yellow); }
 
 /* Arms & Tiles */
 .arm {
@@ -415,20 +439,22 @@ body {
     box-sizing: border-box;
 }
 
-/* Colored Tiles & Paths */
-.tile.red-bg { background-color: var(--color-red); }
-.tile.green-bg { background-color: var(--color-green); }
-.tile.yellow-bg { background-color: var(--color-yellow); }
-.tile.blue-bg { background-color: var(--color-blue); }
+/* Colored Paths */
+.tile.red-bg { background-color: var(--color-red); border-color: var(--color-red-dark); }
+.tile.green-bg { background-color: var(--color-green); border-color: var(--color-green-dark); }
+.tile.yellow-bg { background-color: var(--color-yellow); border-color: var(--color-yellow-dark); }
+.tile.blue-bg { background-color: var(--color-blue); border-color: var(--color-blue-dark); }
 
 /* Star & Arrow Badges on Board */
 .tile .star-icon {
-    font-size: clamp(14px, 2.8vw, 24px);
+    font-size: clamp(16px, 3vw, 24px);
     color: #475569;
+    font-weight: 300;
     line-height: 1;
     display: flex;
     justify-content: center;
     align-items: center;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
 }
 
 .tile .arrow-icon {
@@ -437,12 +463,12 @@ body {
     line-height: 1;
 }
 
-.tile.red-bg .arrow-icon { color: #ffffff; }
-.tile.green-bg .arrow-icon { color: #ffffff; }
-.tile.yellow-bg .arrow-icon { color: #ffffff; }
-.tile.blue-bg .arrow-icon { color: #ffffff; }
+.tile .arrow-red { color: var(--color-red); }
+.tile .arrow-green { color: var(--color-green); }
+.tile .arrow-yellow { color: var(--color-yellow); }
+.tile .arrow-blue { color: var(--color-blue); }
 
-/* Center Home (3x3) */
+/* Center Home (3x3 SVG Triangles) */
 .center-home {
     grid-column: 7 / 10;
     grid-row: 7 / 10;
@@ -452,52 +478,10 @@ body {
     overflow: hidden;
 }
 
-.home-tri {
-    position: absolute;
-    width: 0;
-    height: 0;
-}
-
-.triangle-red {
-    top: 0; left: 0;
-    border-top: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-bottom: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-left: min(41vw, 41vh, 300px) / 10 solid var(--color-red);
-    width: 0; height: 0;
-}
-
-.triangle-green {
-    top: 0; left: 0;
-    border-left: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-right: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-top: min(41vw, 41vh, 300px) / 10 solid var(--color-green);
-    width: 0; height: 0;
-}
-
-.triangle-yellow {
-    top: 0; right: 0;
-    border-top: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-bottom: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-right: min(41vw, 41vh, 300px) / 10 solid var(--color-yellow);
-    width: 0; height: 0;
-}
-
-.triangle-blue {
-    bottom: 0; left: 0;
-    border-left: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-right: min(41vw, 41vh, 300px) / 10 solid transparent;
-    border-bottom: min(41vw, 41vh, 300px) / 10 solid var(--color-blue);
-    width: 0; height: 0;
-}
-
-.home-crown {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: clamp(14px, 2.5vw, 22px);
-    z-index: 2;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+.center-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 /* ==========================================
@@ -522,12 +506,12 @@ body {
     align-items: center;
     pointer-events: auto;
     cursor: default;
-    transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.18s ease, left 0.18s ease;
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.16s ease, left 0.16s ease;
 }
 
 .pawn-marker {
-    width: 78%;
-    height: 90%;
+    width: 82%;
+    height: 92%;
     position: relative;
     display: flex;
     justify-content: center;
@@ -536,14 +520,14 @@ body {
     transition: transform 0.2s ease;
 }
 
-/* Teardrop Pin Marker SVG / Shape */
+/* Teardrop Pin Marker SVG Shape */
 .pawn-pin-shape {
     width: 100%;
     height: 100%;
     border-radius: 50% 50% 50% 0;
     transform: rotate(-45deg);
     background: #ffffff;
-    border: 2px solid rgba(255, 255, 255, 0.9);
+    border: 2px solid #e2e8f0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -551,8 +535,8 @@ body {
 }
 
 .pawn-pin-core {
-    width: 60%;
-    height: 60%;
+    width: 62%;
+    height: 62%;
     border-radius: 50%;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
@@ -569,13 +553,13 @@ body {
 }
 
 .pawn-pin.movable .pawn-marker {
-    animation: pawnBreathe 0.6s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
-    filter: drop-shadow(0 0 10px #fde047) drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+    animation: pawnBreathe 0.55s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+    filter: drop-shadow(0 0 12px #fde047) drop-shadow(0 6px 12px rgba(0,0,0,0.7));
 }
 
 @keyframes pawnBreathe {
     0% { transform: translateY(0) scale(1); }
-    100% { transform: translateY(-8px) scale(1.18); }
+    100% { transform: translateY(-8px) scale(1.2); }
 }
 
 /* ==========================================
@@ -585,12 +569,12 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .dice-box {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     perspective: 400px;
     cursor: pointer;
 }
@@ -606,10 +590,10 @@ body {
 
 .dice-face {
     position: absolute;
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     background: #ffffff;
-    border: 2px solid #e2e8f0;
+    border: 2px solid #cbd5e1;
     border-radius: 12px;
     display: flex;
     justify-content: center;
@@ -659,12 +643,12 @@ body {
 }
 
 /* 3D Cube Faces Positioning */
-.face-1 { transform: rotateY(0deg) translateZ(32px); }
-.face-6 { transform: rotateY(180deg) translateZ(32px); }
-.face-2 { transform: rotateY(90deg) translateZ(32px); }
-.face-5 { transform: rotateY(-90deg) translateZ(32px); }
-.face-3 { transform: rotateX(90deg) translateZ(32px); }
-.face-4 { transform: rotateX(-90deg) translateZ(32px); }
+.face-1 { transform: rotateY(0deg) translateZ(30px); }
+.face-6 { transform: rotateY(180deg) translateZ(30px); }
+.face-2 { transform: rotateY(90deg) translateZ(30px); }
+.face-5 { transform: rotateY(-90deg) translateZ(30px); }
+.face-3 { transform: rotateX(90deg) translateZ(30px); }
+.face-4 { transform: rotateX(-90deg) translateZ(30px); }
 
 /* Dice Rolling Animation */
 .dice-cube.rolling {
@@ -680,7 +664,7 @@ body {
 }
 
 .dice-action-hint {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #38bdf8;
     letter-spacing: 0.5px;
@@ -735,11 +719,11 @@ body {
     border-radius: 20px;
     width: 100%;
     max-width: 440px;
-    padding: 24px;
+    padding: 22px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
 }
 
 .modal-header {
@@ -760,11 +744,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .form-group label {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #94a3b8;
     text-transform: uppercase;
@@ -786,6 +770,7 @@ body {
     font-weight: 700;
     font-size: 0.85rem;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .mode-btn.active {
@@ -808,6 +793,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transition: opacity 0.2s ease;
+}
+
+.slot-item.slot-disabled {
+    opacity: 0.45;
+    background: #0a0e17;
+    border-color: #1e293b;
 }
 
 .slot-badge {
@@ -823,13 +815,19 @@ body {
     border: 1px solid #334155;
     border-radius: 6px;
     padding: 4px 8px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+}
+
+.custom-select:disabled {
+    color: #64748b;
+    background: #111827;
+    border-color: #1e293b;
 }
 
 .btn-large {
     width: 100%;
     padding: 12px;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 /* Companion Sync Modal */
@@ -841,7 +839,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .sync-desc {
@@ -851,13 +849,13 @@ body {
 
 .qr-box {
     background: #ffffff;
-    padding: 12px;
+    padding: 10px;
     border-radius: 12px;
-    margin: 6px auto;
+    margin: 4px auto;
 }
 
 .room-code-display {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
 }
 
@@ -871,14 +869,14 @@ body {
 
 .controller-link {
     color: #38bdf8;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-decoration: underline;
 }
 
 .stealth-tip {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #64748b;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 /* Victory Modal */
@@ -888,7 +886,7 @@ body {
 }
 
 .victory-crown {
-    font-size: 2.8rem;
+    font-size: 2.5rem;
 }
 
 .podium-results {
@@ -896,7 +894,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin: 12px 0;
+    margin: 10px 0;
 }
 
 .podium-row {
@@ -924,7 +922,7 @@ body {
     display: none !important;
 }
 
-/* Responsive Scaling for Mobile Screens & Tablets */
+/* Responsive Scaling */
 @media (max-width: 820px) {
     .game-main {
         flex-direction: column;

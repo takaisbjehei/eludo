@@ -30,20 +30,20 @@
             <div class="header-actions">
                 <button id="btn-sound" class="icon-btn" title="Toggle Sound">🔊</button>
                 <button id="btn-fullscreen" class="icon-btn" title="Fullscreen">⛶</button>
-                <button id="btn-new-game" class="btn btn-primary">🎮 New Game</button>
+                <button id="btn-new-game" class="btn btn-primary">🎮 Game Setup</button>
             </div>
         </header>
 
         <!-- Main Game Layout -->
         <main class="game-main">
-            <!-- Left Side / Player Cards & Interactive 3D Dice -->
+            <!-- Left Side / Player Cards (Red & Blue) -->
             <div class="hud-panel left-hud">
                 <div class="player-card" id="card-red">
                     <div class="avatar-ring red-ring">
                         <span class="player-color-dot red-bg"></span>
                     </div>
                     <div class="player-info">
-                        <div class="player-name">Red Player</div>
+                        <div class="player-name" id="name-label-red">Red Player</div>
                         <div class="player-meta"><span class="pawn-count" id="red-home-count">0/4 Home</span></div>
                     </div>
                     <div class="active-arrow">▶</div>
@@ -54,7 +54,7 @@
                         <span class="player-color-dot blue-bg"></span>
                     </div>
                     <div class="player-info">
-                        <div class="player-name">Blue Player</div>
+                        <div class="player-name" id="name-label-blue">Blue Player</div>
                         <div class="player-meta"><span class="pawn-count" id="blue-home-count">0/4 Home</span></div>
                     </div>
                     <div class="active-arrow">▶</div>
@@ -67,10 +67,10 @@
                     <!-- Top-Left Red Base -->
                     <div class="yard yard-red" id="yard-red">
                         <div class="yard-box">
-                            <div class="yard-slot" id="slot-red-0"></div>
-                            <div class="yard-slot" id="slot-red-1"></div>
-                            <div class="yard-slot" id="slot-red-2"></div>
-                            <div class="yard-slot" id="slot-red-3"></div>
+                            <div class="yard-slot" id="slot-red-0"><span class="slot-disc red-disc"></span></div>
+                            <div class="yard-slot" id="slot-red-1"><span class="slot-disc red-disc"></span></div>
+                            <div class="yard-slot" id="slot-red-2"><span class="slot-disc red-disc"></span></div>
+                            <div class="yard-slot" id="slot-red-3"><span class="slot-disc red-disc"></span></div>
                         </div>
                     </div>
 
@@ -80,10 +80,10 @@
                     <!-- Top-Right Green Base -->
                     <div class="yard yard-green" id="yard-green">
                         <div class="yard-box">
-                            <div class="yard-slot" id="slot-green-0"></div>
-                            <div class="yard-slot" id="slot-green-1"></div>
-                            <div class="yard-slot" id="slot-green-2"></div>
-                            <div class="yard-slot" id="slot-green-3"></div>
+                            <div class="yard-slot" id="slot-green-0"><span class="slot-disc green-disc"></span></div>
+                            <div class="yard-slot" id="slot-green-1"><span class="slot-disc green-disc"></span></div>
+                            <div class="yard-slot" id="slot-green-2"><span class="slot-disc green-disc"></span></div>
+                            <div class="yard-slot" id="slot-green-3"><span class="slot-disc green-disc"></span></div>
                         </div>
                     </div>
 
@@ -92,11 +92,12 @@
 
                     <!-- Center Triangles (3x3) -->
                     <div class="center-home" id="center-home">
-                        <div class="home-tri triangle-red"></div>
-                        <div class="home-tri triangle-green"></div>
-                        <div class="home-tri triangle-yellow"></div>
-                        <div class="home-tri triangle-blue"></div>
-                        <div class="home-crown">👑</div>
+                        <svg class="center-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <polygon points="0,0 50,50 0,100" fill="#e52521" />
+                            <polygon points="0,0 50,50 100,0" fill="#009746" />
+                            <polygon points="100,0 50,50 100,100" fill="#fec006" />
+                            <polygon points="0,100 50,50 100,100" fill="#00a2ed" />
+                        </svg>
                     </div>
 
                     <!-- Right Yellow Arm (3x6) -->
@@ -105,10 +106,10 @@
                     <!-- Bottom-Left Blue Base -->
                     <div class="yard yard-blue" id="yard-blue">
                         <div class="yard-box">
-                            <div class="yard-slot" id="slot-blue-0"></div>
-                            <div class="yard-slot" id="slot-blue-1"></div>
-                            <div class="yard-slot" id="slot-blue-2"></div>
-                            <div class="yard-slot" id="slot-blue-3"></div>
+                            <div class="yard-slot" id="slot-blue-0"><span class="slot-disc blue-disc"></span></div>
+                            <div class="yard-slot" id="slot-blue-1"><span class="slot-disc blue-disc"></span></div>
+                            <div class="yard-slot" id="slot-blue-2"><span class="slot-disc blue-disc"></span></div>
+                            <div class="yard-slot" id="slot-blue-3"><span class="slot-disc blue-disc"></span></div>
                         </div>
                     </div>
 
@@ -118,14 +119,14 @@
                     <!-- Bottom-Right Yellow Base -->
                     <div class="yard yard-yellow" id="yard-yellow">
                         <div class="yard-box">
-                            <div class="yard-slot" id="slot-yellow-0"></div>
-                            <div class="yard-slot" id="slot-yellow-1"></div>
-                            <div class="yard-slot" id="slot-yellow-2"></div>
-                            <div class="yard-slot" id="slot-yellow-3"></div>
+                            <div class="yard-slot" id="slot-yellow-0"><span class="slot-disc yellow-disc"></span></div>
+                            <div class="yard-slot" id="slot-yellow-1"><span class="slot-disc yellow-disc"></span></div>
+                            <div class="yard-slot" id="slot-yellow-2"><span class="slot-disc yellow-disc"></span></div>
+                            <div class="yard-slot" id="slot-yellow-3"><span class="slot-disc yellow-disc"></span></div>
                         </div>
                     </div>
 
-                    <!-- Dynamic Layer for Pawns and Animation Overlays -->
+                    <!-- Dynamic Layer for Pawns -->
                     <div id="pawns-layer" class="pawns-layer"></div>
                 </div>
 
@@ -152,7 +153,7 @@
                         <span class="player-color-dot green-bg"></span>
                     </div>
                     <div class="player-info">
-                        <div class="player-name">Green Player</div>
+                        <div class="player-name" id="name-label-green">Green Player</div>
                         <div class="player-meta"><span class="pawn-count" id="green-home-count">0/4 Home</span></div>
                     </div>
                     <div class="active-arrow">◀</div>
@@ -163,7 +164,7 @@
                         <span class="player-color-dot yellow-bg"></span>
                     </div>
                     <div class="player-info">
-                        <div class="player-name">Yellow Player</div>
+                        <div class="player-name" id="name-label-yellow">Yellow Player</div>
                         <div class="player-meta"><span class="pawn-count" id="yellow-home-count">0/4 Home</span></div>
                     </div>
                     <div class="active-arrow">◀</div>
@@ -178,46 +179,55 @@
         <div id="modal-setup" class="modal-overlay hidden">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h2>Game Setup</h2>
+                    <h2>🎮 Game Setup</h2>
                     <button class="modal-close" id="btn-close-setup">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Game Mode</label>
                         <div class="mode-toggles">
-                            <button type="button" class="mode-btn" data-players="2">2 Players (Red vs Yellow)</button>
-                            <button type="button" class="mode-btn active" data-players="4">4 Players (All Colors)</button>
+                            <button type="button" class="mode-btn active" id="btn-mode-2" data-players="2">2 Players (Red vs Yellow)</button>
+                            <button type="button" class="mode-btn" id="btn-mode-4" data-players="4">4 Players (All Colors)</button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Player Slot Types</label>
+                        <label>Player Slot Settings</label>
                         <div class="slots-grid">
-                            <div class="slot-item slot-red">
-                                <span class="slot-badge red-bg">Red</span>
+                            <!-- Red Slot -->
+                            <div class="slot-item slot-red" id="slot-item-red">
+                                <span class="slot-badge red-bg">🔴 Red</span>
                                 <select id="type-red" class="custom-select">
                                     <option value="human" selected>Human</option>
                                     <option value="bot">AI Bot</option>
                                 </select>
                             </div>
-                            <div class="slot-item slot-green">
-                                <span class="slot-badge green-bg">Green</span>
-                                <select id="type-green" class="custom-select">
-                                    <option value="human" selected>Human</option>
-                                    <option value="bot">AI Bot</option>
-                                </select>
-                            </div>
-                            <div class="slot-item slot-yellow">
-                                <span class="slot-badge yellow-bg">Yellow</span>
+
+                            <!-- Yellow Slot -->
+                            <div class="slot-item slot-yellow" id="slot-item-yellow">
+                                <span class="slot-badge yellow-bg">🟡 Yellow</span>
                                 <select id="type-yellow" class="custom-select">
                                     <option value="human" selected>Human</option>
                                     <option value="bot">AI Bot</option>
                                 </select>
                             </div>
-                            <div class="slot-item slot-blue">
-                                <span class="slot-badge blue-bg">Blue</span>
-                                <select id="type-blue" class="custom-select">
-                                    <option value="human" selected>Human</option>
+
+                            <!-- Green Slot (Locked in 2P mode) -->
+                            <div class="slot-item slot-green slot-disabled" id="slot-item-green">
+                                <span class="slot-badge green-bg">🟢 Green</span>
+                                <select id="type-green" class="custom-select" disabled>
+                                    <option value="locked">🔒 Inactive</option>
+                                    <option value="human">Human</option>
+                                    <option value="bot">AI Bot</option>
+                                </select>
+                            </div>
+
+                            <!-- Blue Slot (Locked in 2P mode) -->
+                            <div class="slot-item slot-blue slot-disabled" id="slot-item-blue">
+                                <span class="slot-badge blue-bg">🔵 Blue</span>
+                                <select id="type-blue" class="custom-select" disabled>
+                                    <option value="locked">🔒 Inactive</option>
+                                    <option value="human">Human</option>
                                     <option value="bot">AI Bot</option>
                                 </select>
                             </div>
@@ -230,7 +240,7 @@
             </div>
         </div>
 
-        <!-- Stealth Companion Connect Modal (For Host Phone Remote) -->
+        <!-- Stealth Companion Connect Modal -->
         <div id="modal-sync" class="modal-overlay hidden">
             <div class="modal-card sync-card">
                 <div class="modal-header">
@@ -238,7 +248,7 @@
                     <button class="modal-close" id="btn-close-sync">×</button>
                 </div>
                 <div class="modal-body sync-body">
-                    <p class="sync-desc">Scan with your phone to open the controller on your second device:</p>
+                    <p class="sync-desc">Scan with Phone 2 to control the dice secretly:</p>
                     <div id="qr-container" class="qr-box"></div>
                     <div class="room-code-display">
                         Room Code: <span class="code-pill" id="sync-room-code">----</span>

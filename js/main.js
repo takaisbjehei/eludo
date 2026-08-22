@@ -12,20 +12,20 @@ class LudoApp {
         this.turnText = document.getElementById('turn-text');
         this.toastBanner = document.getElementById('toast-banner');
 
-        this.selectedPlayerCount = 4;
+        this.selectedPlayerCount = 2; // Default to 2 players
         this.playerTypes = { red: false, green: false, yellow: false, blue: false };
 
-        this.pawnElements = new Map(); // key: 'color_id', value: DOM Element
+        this.pawnElements = new Map();
 
         this.initBoardStructure();
         this.initEventListeners();
         this.initRemoteCompanion();
         this.initGameEngineHooks();
+        this.applySetupModeUI(2);
         this.startNewGame();
     }
 
     initBoardStructure() {
-        // Build the 4 arms of the board
         const armTop = document.getElementById('arm-top');
         const armBottom = document.getElementById('arm-bottom');
         const armLeft = document.getElementById('arm-left');
@@ -34,40 +34,28 @@ class LudoApp {
         // Top Arm: 6 rows x 3 cols (r: 0..5, c: 6..8)
         for (let r = 0; r < 6; r++) {
             for (let c = 0; c < 3; c++) {
-                const absR = r;
-                const absC = 6 + c;
-                const tile = this.createTileElement(absR, absC);
-                armTop.appendChild(tile);
+                armTop.appendChild(this.createTileElement(r, 6 + c));
             }
         }
 
         // Bottom Arm: 6 rows x 3 cols (r: 9..14, c: 6..8)
         for (let r = 0; r < 6; r++) {
             for (let c = 0; c < 3; c++) {
-                const absR = 9 + r;
-                const absC = 6 + c;
-                const tile = this.createTileElement(absR, absC);
-                armBottom.appendChild(tile);
+                armBottom.appendChild(this.createTileElement(9 + r, 6 + c));
             }
         }
 
         // Left Arm: 3 rows x 6 cols (r: 6..8, c: 0..5)
         for (let r = 0; r < 3; r++) {
             for (let c = 0; c < 6; c++) {
-                const absR = 6 + r;
-                const absC = c;
-                const tile = this.createTileElement(absR, absC);
-                armLeft.appendChild(tile);
+                armLeft.appendChild(this.createTileElement(6 + r, c));
             }
         }
 
         // Right Arm: 3 rows x 6 cols (r: 6..8, c: 9..14)
         for (let r = 0; r < 3; r++) {
             for (let c = 0; c < 6; c++) {
-                const absR = 6 + r;
-                const absC = 9 + c;
-                const tile = this.createTileElement(absR, absC);
-                armRight.appendChild(tile);
+                armRight.appendChild(this.createTileElement(6 + r, 9 + c));
             }
         }
     }
@@ -78,36 +66,32 @@ class LudoApp {
         tile.dataset.r = r;
         tile.dataset.c = c;
 
-        // Check for Colored Home Stretch Paths
-        // Red Home: r=7, c=1..5
+        // Colored Home Stretch Paths
         if (r === 7 && c >= 1 && c <= 5) tile.classList.add('red-bg');
-        // Green Home: r=1..5, c=7
         if (c === 7 && r >= 1 && r <= 5) tile.classList.add('green-bg');
-        // Yellow Home: r=7, c=9..13
         if (r === 7 && c >= 9 && c <= 13) tile.classList.add('yellow-bg');
-        // Blue Home: r=9..13, c=7
         if (c === 7 && r >= 9 && r <= 13) tile.classList.add('blue-bg');
 
-        // Check for Starting Tiles & Entry Arrows
+        // Starting Tiles & Entry Arrows (Exact match to reference image)
         if (r === 6 && c === 1) {
-            // Red start
             tile.classList.add('red-bg');
-            tile.innerHTML = '<span class="arrow-icon">➔</span>';
+        } else if (r === 6 && c === 0) {
+            tile.innerHTML = '<span class="arrow-icon arrow-red">➔</span>';
         } else if (r === 1 && c === 8) {
-            // Green start
             tile.classList.add('green-bg');
-            tile.innerHTML = '<span class="arrow-icon">⬇</span>';
+        } else if (r === 0 && c === 8) {
+            tile.innerHTML = '<span class="arrow-icon arrow-green">⬇</span>';
         } else if (r === 8 && c === 13) {
-            // Yellow start
             tile.classList.add('yellow-bg');
-            tile.innerHTML = '<span class="arrow-icon">⬅</span>';
+        } else if (r === 8 && c === 14) {
+            tile.innerHTML = '<span class="arrow-icon arrow-yellow">⬅</span>';
         } else if (r === 13 && c === 6) {
-            // Blue start
             tile.classList.add('blue-bg');
-            tile.innerHTML = '<span class="arrow-icon">⬆</span>';
+        } else if (r === 14 && c === 6) {
+            tile.innerHTML = '<span class="arrow-icon arrow-blue">⬆</span>';
         }
 
-        // Safe Star Tiles
+        // Safe Star Tiles (Exact coordinates from reference)
         if ((r === 2 && c === 6) || (r === 6 && c === 12) || (r === 12 && c === 8) || (r === 8 && c === 2)) {
             tile.innerHTML = '<span class="star-icon">★</span>';
         }
@@ -175,20 +159,33 @@ class LudoApp {
         btnCloseSetup.addEventListener('click', () => modalSetup.classList.add('hidden'));
 
         // Mode toggles (2 or 4 players)
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.selectedPlayerCount = parseInt(btn.dataset.players, 10);
-            });
+        const btnMode2 = document.getElementById('btn-mode-2');
+        const btnMode4 = document.getElementById('btn-mode-4');
+
+        btnMode2.addEventListener('click', () => {
+            btnMode2.classList.add('active');
+            btnMode4.classList.remove('active');
+            this.applySetupModeUI(2);
+        });
+
+        btnMode4.addEventListener('click', () => {
+            btnMode4.classList.add('active');
+            btnMode2.classList.remove('active');
+            this.applySetupModeUI(4);
         });
 
         // Start Match button
         btnStartMatch.addEventListener('click', () => {
             this.playerTypes.red = document.getElementById('type-red').value === 'bot';
-            this.playerTypes.green = document.getElementById('type-green').value === 'bot';
             this.playerTypes.yellow = document.getElementById('type-yellow').value === 'bot';
-            this.playerTypes.blue = document.getElementById('type-blue').value === 'bot';
+
+            if (this.selectedPlayerCount === 4) {
+                this.playerTypes.green = document.getElementById('type-green').value === 'bot';
+                this.playerTypes.blue = document.getElementById('type-blue').value === 'bot';
+            } else {
+                this.playerTypes.green = false;
+                this.playerTypes.blue = false;
+            }
 
             modalSetup.classList.add('hidden');
             this.startNewGame();
@@ -214,6 +211,31 @@ class LudoApp {
         });
     }
 
+    applySetupModeUI(playersCount) {
+        this.selectedPlayerCount = playersCount;
+
+        const slotGreen = document.getElementById('slot-item-green');
+        const slotBlue = document.getElementById('slot-item-blue');
+        const typeGreen = document.getElementById('type-green');
+        const typeBlue = document.getElementById('type-blue');
+
+        if (playersCount === 2) {
+            slotGreen.classList.add('slot-disabled');
+            slotBlue.classList.add('slot-disabled');
+            typeGreen.disabled = true;
+            typeBlue.disabled = true;
+            typeGreen.value = 'locked';
+            typeBlue.value = 'locked';
+        } else {
+            slotGreen.classList.remove('slot-disabled');
+            slotBlue.classList.remove('slot-disabled');
+            typeGreen.disabled = false;
+            typeBlue.disabled = false;
+            if (typeGreen.value === 'locked') typeGreen.value = 'human';
+            if (typeBlue.value === 'locked') typeBlue.value = 'human';
+        }
+    }
+
     initRemoteCompanion() {
         if (window.remoteSync) {
             document.getElementById('nav-room-code').textContent = window.remoteSync.roomCode;
@@ -229,7 +251,6 @@ class LudoApp {
                 return this.game.getPublicState();
             };
 
-            // Start peer connection broker
             window.remoteSync.initPeerServer();
         }
     }
@@ -243,7 +264,6 @@ class LudoApp {
 
         document.getElementById('sync-direct-link').href = controllerUrl;
 
-        // Generate QR code
         const qrContainer = document.getElementById('qr-container');
         qrContainer.innerHTML = '';
         if (typeof QRCode !== 'undefined') {
@@ -260,6 +280,19 @@ class LudoApp {
 
     startNewGame() {
         this.game.initGame(this.selectedPlayerCount, this.playerTypes);
+
+        // Update Inactive Yard styling on board
+        const yardGreen = document.getElementById('yard-green');
+        const yardBlue = document.getElementById('yard-blue');
+
+        if (this.selectedPlayerCount === 2) {
+            yardGreen.classList.add('yard-inactive');
+            yardBlue.classList.add('yard-inactive');
+        } else {
+            yardGreen.classList.remove('yard-inactive');
+            yardBlue.classList.remove('yard-inactive');
+        }
+
         this.rebuildPawns();
         this.updateTurnUI(this.game.getCurrentPlayer());
         this.updatePawnPositions();
@@ -300,7 +333,6 @@ class LudoApp {
     }
 
     updatePawnPositions() {
-        // Group pawns by identical location to calculate clustering offsets
         const locationMap = new Map();
 
         this.game.players.forEach(player => {
@@ -333,7 +365,7 @@ class LudoApp {
             });
         });
 
-        // Position and highlight each pawn
+        // Movable highlighted pawns
         const movableSet = new Set(
             this.game.gameState === 'WAITING_PAWN_SELECT'
                 ? this.game.validMovablePawns.map(p => `${p.color}_${p.id}`)
@@ -347,14 +379,12 @@ class LudoApp {
                 const pawnEl = this.pawnElements.get(key);
                 if (!pawnEl) return;
 
-                // Movable highlight
                 if (movableSet.has(key)) {
                     pawnEl.classList.add('movable');
                 } else {
                     pawnEl.classList.remove('movable');
                 }
 
-                // Calculate cluster offset if multiple pawns share a square
                 let offsetX = 0;
                 let offsetY = 0;
                 let scale = 1;
@@ -375,7 +405,6 @@ class LudoApp {
             });
         });
 
-        // Update HUD home counters
         this.updateHomeCounters();
     }
 
@@ -384,11 +413,13 @@ class LudoApp {
             const player = this.game.players.find(p => p.color === color);
             const countEl = document.getElementById(`${color}-home-count`);
             const cardEl = document.getElementById(`card-${color}`);
+            const nameLabel = document.getElementById(`name-label-${color}`);
 
             if (player) {
                 cardEl.style.display = 'flex';
                 const homeCount = player.pawns.filter(p => p.state === 'home').length;
                 countEl.textContent = `${homeCount}/4 Home`;
+                nameLabel.textContent = `${COLOR_CONFIG[color].name} ${player.isBot ? '(AI)' : ''}`;
             } else {
                 cardEl.style.display = 'none';
             }
@@ -398,16 +429,13 @@ class LudoApp {
     updateTurnUI(player) {
         if (!player) return;
 
-        // Turn indicator pill
         this.turnPill.className = `turn-pill ${player.color}-turn`;
         this.turnText.textContent = `${player.name}'s Turn ${player.isBot ? '(AI)' : ''}`;
 
-        // Active Player Card highlight
         document.querySelectorAll('.player-card').forEach(card => card.classList.remove('active'));
         const activeCard = document.getElementById(`card-${player.color}`);
         if (activeCard) activeCard.classList.add('active');
 
-        // Dice Action Hint
         if (player.isBot) {
             this.diceHint.textContent = 'AI is Rolling...';
         } else {
@@ -417,9 +445,8 @@ class LudoApp {
 
     animate3DDice(rolledNumber, onFinished) {
         this.diceCube.classList.remove('rolling');
-        void this.diceCube.offsetWidth; // Force CSS reflow
+        void this.diceCube.offsetWidth;
 
-        // 3D rotations for dice faces 1..6
         const rotations = {
             1: 'rotateX(0deg) rotateY(0deg)',
             2: 'rotateX(0deg) rotateY(-90deg)',

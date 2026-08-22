@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>eLudo Companion - Remote Pad</title>
+    <title>eLudo Companion - Stealth Remote</title>
     <link rel="stylesheet" href="controller.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
@@ -13,7 +13,7 @@
         <header class="ctrl-header">
             <div class="ctrl-brand">
                 <span class="ctrl-icon">📱</span>
-                <h1>Dice Remote</h1>
+                <h1>eLudo Controller</h1>
             </div>
             <div class="stealth-mode-btn" id="btn-stealth-toggle" title="Switch to Stealth Disguise">🕶️ Stealth</div>
         </header>
@@ -21,12 +21,12 @@
         <!-- Connection Box -->
         <section class="connect-card" id="connect-card">
             <div class="connect-row">
-                <input type="text" id="input-room-code" placeholder="4-Digit Room Code" maxlength="6" inputmode="numeric" />
-                <button id="btn-connect" class="btn btn-connect">Pair Device</button>
+                <input type="text" id="input-room-code" placeholder="4-Digit Code" maxlength="6" inputmode="numeric" />
+                <button id="btn-connect" class="btn btn-connect">Pair</button>
             </div>
             <div class="status-indicator" id="conn-status">
                 <span class="status-dot dot-yellow"></span>
-                <span id="conn-text">Enter the 4-digit code shown on the main game</span>
+                <span id="conn-text">Enter code shown on Phone 1</span>
             </div>
         </section>
 
@@ -36,16 +36,43 @@
             <div class="live-card">
                 <div class="live-header">
                     <span class="live-badge">🔴 LIVE GAME</span>
-                    <span class="turn-owner" id="ctrl-turn-owner">Waiting for Game...</span>
+                    <span class="turn-owner" id="ctrl-turn-owner">Connecting...</span>
                 </div>
                 <div class="active-dice-peek">
-                    Last Main Roll: <strong id="ctrl-last-roll">-</strong>
+                    Last Roll: <strong id="ctrl-last-roll">-</strong>
                 </div>
             </div>
 
-            <!-- Secret Queued Selection -->
+            <!-- Color Target Selector (Which player to control) -->
+            <div class="target-color-card">
+                <div class="target-title">🎯 Control Dice For:</div>
+                <div class="color-target-grid">
+                    <button class="target-btn active" data-color="any">
+                        <span class="target-icon">🎲</span>
+                        <span class="target-label">Any Turn</span>
+                    </button>
+                    <button class="target-btn" data-color="red">
+                        <span class="color-dot red-bg"></span>
+                        <span class="target-label">Red</span>
+                    </button>
+                    <button class="target-btn" data-color="green">
+                        <span class="color-dot green-bg"></span>
+                        <span class="target-label">Green</span>
+                    </button>
+                    <button class="target-btn" data-color="yellow">
+                        <span class="color-dot yellow-bg"></span>
+                        <span class="target-label">Yellow</span>
+                    </button>
+                    <button class="target-btn" data-color="blue">
+                        <span class="color-dot blue-bg"></span>
+                        <span class="target-label">Blue</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Secret Queued Selection Status -->
             <div class="selection-status-box" id="selection-status">
-                Current Mode: <strong id="active-mode-label" class="mode-highlight">🎲 Natural Random</strong>
+                Mode: <strong id="active-mode-label" class="mode-highlight">🎲 Natural Random</strong>
             </div>
 
             <!-- Stealth Number Pad (1 to 6) -->
@@ -82,15 +109,15 @@
                     🎲 Fair Random
                 </button>
                 <button id="btn-roll-remote" class="btn btn-action">
-                    ⚡ Secret Roll Main Screen
+                    ⚡ Secret Roll Phone 1
                 </button>
             </div>
 
             <!-- Auto-6 Stealth Toggle -->
             <div class="toggle-card">
                 <div class="toggle-info">
-                    <div class="toggle-title">✨ Always 6 on Base Yard</div>
-                    <div class="toggle-desc">Automatically rolls 6 when your pawns are stuck in base</div>
+                    <div class="toggle-title">✨ Auto-6 for Yard Exit</div>
+                    <div class="toggle-desc">Automatically rolls 6 when target pawns are stuck in base</div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="toggle-auto-six">
@@ -134,7 +161,7 @@
 
         <footer class="ctrl-footer">
             <span>Room: <strong id="footer-room-code">----</strong></span>
-            <span>Status: <strong id="footer-status">Ready</strong></span>
+            <span>Target: <strong id="footer-target">Any</strong></span>
         </footer>
     </div>
 
