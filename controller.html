@@ -10,7 +10,9 @@
     <title>eLudo Companion - Remote Pad</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="controller.css">
+    <!-- WebRTC and Fast Cloud MQTT WebSocket Broker for instant device pairing -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 </head>
 <body>
     <div class="controller-app">
@@ -37,20 +39,34 @@
 
         <!-- Main Controller View -->
         <main class="remote-main" id="remote-main">
-            <!-- Active Game Live Monitor -->
+            <!-- Active Game Live Monitor & Mini-Board -->
             <div class="live-card">
                 <div class="live-header">
-                    <span class="live-badge">🔴 LIVE GAME</span>
+                    <span class="live-badge">🔴 ONGOING MATCH</span>
                     <span class="live-mode-tag" id="ctrl-mode-tag">2 Players</span>
-                    <span class="turn-owner" id="ctrl-turn-owner">Connecting...</span>
                 </div>
-                <div class="active-dice-peek">
-                    Last Roll: <strong id="ctrl-last-roll">-</strong>
+                
+                <div class="live-status-row">
+                    <div class="turn-owner" id="ctrl-turn-owner">Connecting to Game...</div>
+                    <div class="active-dice-peek">
+                        Last Roll: <strong id="ctrl-last-roll">-</strong>
+                    </div>
                 </div>
+
+                <!-- Miniature Live Board Radar -->
+                <div class="mini-board-stage">
+                    <div class="mini-board" id="mini-board">
+                        <div class="mini-yard my-red"></div>
+                        <div class="mini-yard my-green" id="my-green"></div>
+                        <div class="mini-yard my-blue" id="my-blue"></div>
+                        <div class="mini-yard my-yellow"></div>
+                        <div class="mini-center">👑</div>
+                        <div class="mini-pawns-layer" id="mini-pawns-layer"></div>
+                    </div>
+                </div>
+
                 <!-- Live Pawns Progress Summary -->
-                <div class="live-pawn-summary" id="live-pawn-summary">
-                    <!-- Populated dynamically -->
-                </div>
+                <div class="live-pawn-summary" id="live-pawn-summary"></div>
             </div>
 
             <!-- Color Target Selector (Which player to control) -->

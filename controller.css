@@ -204,14 +204,88 @@ body {
     color: var(--text-muted);
 }
 
-.active-dice-peek strong {
-    font-size: 1.15rem;
-    color: var(--accent-blue);
+.live-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
+
+/* Miniature Live Board Radar */
+.mini-board-stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 6px 0;
+}
+
+.mini-board {
+    width: 160px;
+    height: 160px;
+    background: #ffffff;
+    border: 2px solid #334155;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+}
+
+.mini-yard {
+    position: absolute;
+    width: 40%;
+    height: 40%;
+    border-radius: 4px;
+}
+
+.my-red { top: 0; left: 0; background: var(--color-red); }
+.my-green { top: 0; right: 0; background: var(--color-green); }
+.my-blue { bottom: 0; left: 0; background: var(--color-blue); }
+.my-yellow { bottom: 0; right: 0; background: var(--color-yellow); }
+
+.mini-yard.yard-inactive {
+    opacity: 0.25;
+    filter: grayscale(0.8);
+}
+
+.mini-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    z-index: 2;
+}
+
+.mini-pawns-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.mini-pawn {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid #ffffff;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s ease;
+}
+
+.mini-pawn.red { background: var(--color-red); }
+.mini-pawn.green { background: var(--color-green); }
+.mini-pawn.yellow { background: var(--color-yellow); }
+.mini-pawn.blue { background: var(--color-blue); }
 
 .live-pawn-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
     gap: 6px;
     margin-top: 4px;
     padding-top: 6px;

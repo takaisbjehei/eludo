@@ -1,13 +1,14 @@
-// Secret Remote Controller & Sync Engine for eLudo
+// Ultra-Reliable Remote Sync Engine for eLudo (WebRTC + Public MQTT Relay + BroadcastChannel)
 
 class RemoteSync {
     constructor() {
-        this.roomCode = this.generateRoomCode();
+        this.roomCode = this.getStoredOrNewRoomCode();
         this.peer = null;
         this.connections = [];
         this.channel = null;
+        this.mqttClient = null;
         this.forcedDiceValue = null;
-        this.forcedTargetColor = 'any'; // 'any' or specific color
+        this.forcedTargetColor = 'any';
         this.autoSixEnabled = false;
         this.autoSixTargetColor = 'any';
         this.onDiceCommand = null;
@@ -16,10 +17,16 @@ class RemoteSync {
 
         this.initBroadcastChannel();
         this.initKeyboardStealth();
+        this.initMQTT();
     }
 
-    generateRoomCode() {
-        return Math.floor(1000 + Math.random() * 9000).toString();
+    getStoredOrNewRoomCode() {
+        let code = localStorage.getItem('eludo_host_room');
+        if (!code) {
+            code = Math.floor(1000 + Math.random() * 9000).toString();
+            localStorage.setItem('eludo_host_room', code);
+        }
+        return code;
     }
 
     initBroadcastChannel() {
@@ -28,6 +35,34 @@ class RemoteSync {
             this.channel.onmessage = (event) => {
                 this.handleIncomingMessage(event.data);
             };
+        }
+    }
+
+    initMQTT() {
+        if (typeof mqtt === 'undefined') return;
+
+        try {
+            // Connect to public fast MQTT broker over SSL WebSocket
+            this.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                clientId: 'eludo_host_' + this.roomCode + '_' + Math.random().toString(16).substr(2, 6),
+                keepalive: 30
+            });
+
+            this.mqttClient.on('connect', () => {
+                this.isConnected = true;
+                this.mqttClient.subscribe(`eludo/room/${this.roomCode}/host`, { qos: 1 });
+            });
+
+            this.mqttClient.on('message', (topic, message) => {
+                try {
+                    const data = JSON.parse(message.toString());
+                    this.handleIncomingMessage(data);
+                } catch (e) {
+                    console.warn(e);
+                }
+            });
+        } catch (e) {
+            console.warn('MQTT init notice:', e);
         }
     }
 
@@ -65,7 +100,7 @@ class RemoteSync {
                 });
             });
         } catch (e) {
-            console.warn('PeerJS init:', e);
+            console.warn('PeerJS init notice:', e);
         }
     }
 
@@ -113,13 +148,25 @@ class RemoteSync {
 
     broadcastState(state) {
         const payload = { type: 'STATE_UPDATE', state };
+
+        // 1. Send via MQTT Relay
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.publish(`eludo/room/${this.roomCode}/state`, JSON.stringify(payload), { qos: 1 });
+        }
+
+        // 2. Send via BroadcastChannel
         if (this.channel) this.channel.postMessage(payload);
+
+        // 3. Send via WebRTC
         this.connections.forEach(conn => {
             if (conn.open) conn.send(payload);
         });
     }
 
     broadcastToControllers(payload) {
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.publish(`eludo/room/${this.roomCode}/state`, JSON.stringify(payload), { qos: 1 });
+        }
         if (this.channel) this.channel.postMessage(payload);
         this.connections.forEach(conn => {
             if (conn.open) conn.send(payload);
@@ -127,7 +174,6 @@ class RemoteSync {
     }
 
     consumeForcedDice(currentPlayer) {
-        // Auto-6 check
         if (this.autoSixEnabled && currentPlayer.hasPawnsInYard) {
             const matchesTarget = (this.autoSixTargetColor === 'any' || this.autoSixTargetColor === currentPlayer.color);
             if (matchesTarget && Math.random() < 0.85) {
@@ -135,12 +181,11 @@ class RemoteSync {
             }
         }
 
-        // Forced roll check
         if (this.forcedDiceValue !== null) {
             const matchesTarget = (this.forcedTargetColor === 'any' || this.forcedTargetColor === currentPlayer.color);
             if (matchesTarget) {
                 const val = this.forcedDiceValue;
-                this.forcedDiceValue = null; // consume once executed
+                this.forcedDiceValue = null;
                 this.broadcastToControllers({ type: 'CONFIRM_FORCE', value: null });
                 return val;
             }

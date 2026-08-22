@@ -6,6 +6,7 @@ class ControllerClient {
         this.peer = null;
         this.conn = null;
         this.channel = null;
+        this.mqttClient = null;
         this.activeForcedValue = null;
         this.targetColor = 'any'; // 'any', 'red', 'green', 'yellow', 'blue'
         this.isStealthDisguise = false;
@@ -23,6 +24,7 @@ class ControllerClient {
         this.ctrlLastRoll = document.getElementById('ctrl-last-roll');
         this.ctrlModeTag = document.getElementById('ctrl-mode-tag');
         this.livePawnSummary = document.getElementById('live-pawn-summary');
+        this.miniPawnsLayer = document.getElementById('mini-pawns-layer');
         this.activeModeLabel = document.getElementById('active-mode-label');
         this.btnRollRemote = document.getElementById('btn-roll-remote');
         this.btnClearForce = document.getElementById('btn-clear-force');
@@ -48,10 +50,10 @@ class ControllerClient {
             }
         });
 
-        // 5-Tap Gesture on Header Bar to Switch Disguise
+        // 5-Tap Gesture on Header Bar
         let headerTapCount = 0;
         let headerTapTimer = null;
-        this.ctrlHeaderBar.addEventListener('click', (e) => {
+        this.ctrlHeaderBar.addEventListener('click', () => {
             headerTapCount++;
             clearTimeout(headerTapTimer);
             headerTapTimer = setTimeout(() => { headerTapCount = 0; }, 2200);
@@ -83,7 +85,7 @@ class ControllerClient {
             });
         });
 
-        // Clear button (Pure Random)
+        // Clear button
         this.btnClearForce.addEventListener('click', () => {
             this.setForcedDice(null);
         });
@@ -125,6 +127,10 @@ class ControllerClient {
             if (match) code = match[1];
         }
 
+        if (!code) {
+            code = localStorage.getItem('eludo_client_room');
+        }
+
         if (code) {
             this.inputRoomCode.value = code;
             this.connectToRoom(code);
@@ -133,9 +139,40 @@ class ControllerClient {
 
     connectToRoom(code) {
         this.roomCode = code.toUpperCase();
+        localStorage.setItem('eludo_client_room', this.roomCode);
         this.footerRoomCode.textContent = this.roomCode;
         this.updateStatus('yellow', `Connecting to #${this.roomCode}...`);
 
+        // 1. Connect via fast public MQTT WebSocket Broker
+        if (typeof mqtt !== 'undefined') {
+            try {
+                if (this.mqttClient) this.mqttClient.end();
+                this.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                    clientId: 'eludo_ctrl_' + this.roomCode + '_' + Math.random().toString(16).substr(2, 6),
+                    keepalive: 30
+                });
+
+                this.mqttClient.on('connect', () => {
+                    this.updateStatus('green', `Connected to Ongoing Match #${this.roomCode}`);
+                    this.mqttClient.subscribe(`eludo/room/${this.roomCode}/state`, { qos: 1 });
+                    // Request full state immediately
+                    this.sendMessage({ type: 'REQUEST_STATE' });
+                });
+
+                this.mqttClient.on('message', (topic, message) => {
+                    try {
+                        const data = JSON.parse(message.toString());
+                        this.handleIncomingMessage(data);
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                });
+            } catch (e) {
+                console.warn('MQTT client notice:', e);
+            }
+        }
+
+        // 2. Connect via BroadcastChannel
         if ('BroadcastChannel' in window) {
             if (this.channel) this.channel.close();
             this.channel = new BroadcastChannel('eludo_remote_' + this.roomCode);
@@ -143,6 +180,7 @@ class ControllerClient {
             this.channel.postMessage({ type: 'REQUEST_STATE' });
         }
 
+        // 3. Connect via WebRTC (PeerJS)
         if (typeof Peer !== 'undefined') {
             try {
                 if (this.peer) this.peer.destroy();
@@ -156,33 +194,22 @@ class ControllerClient {
                     }
                 });
 
-                this.peer.on('open', (id) => {
+                this.peer.on('open', () => {
                     const hostPeerId = 'eludo-host-' + this.roomCode;
                     this.conn = this.peer.connect(hostPeerId, { reliable: true });
 
                     this.conn.on('open', () => {
-                        this.updateStatus('green', `Paired with #${this.roomCode}`);
+                        this.updateStatus('green', `Connected to Ongoing Match #${this.roomCode}`);
                         this.sendMessage({ type: 'REQUEST_STATE' });
                     });
 
                     this.conn.on('data', (data) => {
                         this.handleIncomingMessage(data);
                     });
-
-                    this.conn.on('close', () => {
-                        this.updateStatus('red', 'Disconnected');
-                    });
-                });
-
-                this.peer.on('error', (err) => {
-                    console.warn('Peer connection notice:', err);
-                    this.updateStatus('green', `Paired locally #${this.roomCode}`);
                 });
             } catch (e) {
                 console.warn(e);
             }
-        } else {
-            this.updateStatus('green', `Paired locally #${this.roomCode}`);
         }
     }
 
@@ -192,6 +219,9 @@ class ControllerClient {
     }
 
     sendMessage(payload) {
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.publish(`eludo/room/${this.roomCode}/host`, JSON.stringify(payload), { qos: 1 });
+        }
         if (this.channel) {
             this.channel.postMessage(payload);
         }
@@ -249,7 +279,7 @@ class ControllerClient {
         if (data.type === 'STATE_UPDATE' && data.state) {
             const s = data.state;
             
-            // Update Turn info
+            // Turn info
             if (s.currentPlayer) {
                 this.ctrlTurnOwner.textContent = `${s.currentPlayer.name}'s Turn`;
                 this.ctrlTurnOwner.style.color = s.currentPlayer.color === 'yellow' ? '#facc15' : (s.currentPlayer.color === 'blue' ? '#38bdf8' : (s.currentPlayer.color === 'green' ? '#4ade80' : '#f87171'));
@@ -258,7 +288,7 @@ class ControllerClient {
                 this.ctrlLastRoll.textContent = s.diceValue;
             }
 
-            // Update Game Mode Tag & Lock 2-Player buttons
+            // Game Mode & 2-Player lock
             if (s.playerCount) {
                 this.ctrlModeTag.textContent = `${s.playerCount} Players`;
             }
@@ -266,23 +296,25 @@ class ControllerClient {
             const activeColors = s.players ? s.players.map(p => p.color) : ['red', 'yellow'];
             const btnGreen = document.getElementById('target-btn-green');
             const btnBlue = document.getElementById('target-btn-blue');
+            const myGreen = document.getElementById('my-green');
+            const myBlue = document.getElementById('my-blue');
 
             if (!activeColors.includes('green')) {
                 btnGreen.classList.add('target-locked');
-                btnGreen.title = 'Inactive in 2P Game';
+                if (myGreen) myGreen.classList.add('yard-inactive');
                 if (this.targetColor === 'green') this.resetTargetToAny();
             } else {
                 btnGreen.classList.remove('target-locked');
-                btnGreen.title = '';
+                if (myGreen) myGreen.classList.remove('yard-inactive');
             }
 
             if (!activeColors.includes('blue')) {
                 btnBlue.classList.add('target-locked');
-                btnBlue.title = 'Inactive in 2P Game';
+                if (myBlue) myBlue.classList.add('yard-inactive');
                 if (this.targetColor === 'blue') this.resetTargetToAny();
             } else {
                 btnBlue.classList.remove('target-locked');
-                btnBlue.title = '';
+                if (myBlue) myBlue.classList.remove('yard-inactive');
             }
 
             // Render live pawns status summary
@@ -304,6 +336,11 @@ class ControllerClient {
                     this.livePawnSummary.appendChild(pill);
                 });
             }
+
+            // Render Live Mini-Board
+            if (s.players && this.miniPawnsLayer) {
+                this.renderMiniBoard(s.players);
+            }
         }
 
         if (data.type === 'CONFIRM_FORCE') {
@@ -311,6 +348,48 @@ class ControllerClient {
                 this.setForcedDice(null);
             }
         }
+    }
+
+    renderMiniBoard(players) {
+        this.miniPawnsLayer.innerHTML = '';
+
+        const yardBases = {
+            red: { x: 20, y: 20 },
+            green: { x: 80, y: 20 },
+            blue: { x: 20, y: 80 },
+            yellow: { x: 80, y: 80 }
+        };
+
+        players.forEach(player => {
+            player.pawns.forEach((pawn, idx) => {
+                const dot = document.createElement('div');
+                dot.className = `mini-pawn ${player.color}`;
+
+                let posX = 50;
+                let posY = 50;
+
+                if (pawn.state === 'yard') {
+                    const base = yardBases[player.color];
+                    const offX = (idx % 2 === 0 ? -7 : 7);
+                    const offY = (idx < 2 ? -7 : 7);
+                    posX = base.x + offX;
+                    posY = base.y + offY;
+                } else if (pawn.state === 'home') {
+                    posX = 50 + (player.color === 'red' ? -6 : (player.color === 'yellow' ? 6 : 0));
+                    posY = 50 + (player.color === 'green' ? -6 : (player.color === 'blue' ? 6 : 0));
+                } else {
+                    // On track or home stretch
+                    const angle = (pawn.step / 56) * (2 * Math.PI) - Math.PI / 2;
+                    const radius = pawn.state === 'homeStretch' ? 18 : 36;
+                    posX = 50 + Math.cos(angle) * radius;
+                    posY = 50 + Math.sin(angle) * radius;
+                }
+
+                dot.style.left = `${posX}%`;
+                dot.style.top = `${posY}%`;
+                this.miniPawnsLayer.appendChild(dot);
+            });
+        });
     }
 
     resetTargetToAny() {
