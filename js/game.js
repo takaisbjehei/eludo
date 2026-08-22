@@ -106,7 +106,8 @@ class LudoGame {
             this.playerCount = data.playerCount || data.players.length;
             this.currentPlayerIndex = data.currentPlayerIndex || 0;
             this.diceValue = data.diceValue || 1;
-            this.gameState = data.gameState || 'WAITING_ROLL';
+            this.gameState = 'WAITING_ROLL';
+            this.validMovablePawns = [];
             this.sixStreak = data.sixStreak || 0;
             this.isProcessingMove = false;
 
