@@ -84,6 +84,144 @@ body {
     background: #475569;
 }
 
+/* Matches Lobby Card (Auto-Discovery) */
+.matches-lobby-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.matches-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.matches-title-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.live-pulse {
+    font-size: 0.75rem;
+    animation: pulseGlow 1.5s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    0% { opacity: 0.4; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 6px #22c55e); }
+}
+
+.matches-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.btn-mini-scan {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-mini-scan:active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.scanning-placeholder {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    padding: 12px;
+    text-align: center;
+    background: #0f172a;
+    border-radius: var(--radius-md);
+}
+
+.spin-icon {
+    display: inline-block;
+    animation: spinRadar 2s linear infinite;
+}
+
+@keyframes spinRadar {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.match-item-card {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 2px solid #38bdf8;
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(56, 189, 248, 0.15);
+    transition: all 0.2s ease;
+}
+
+.match-item-card:active {
+    transform: scale(0.97);
+    background: #2563eb;
+    border-color: #93c5fd;
+}
+
+.match-info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.match-room-tag {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.match-meta-tag {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.match-connect-badge {
+    background: #22c55e;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(34, 197, 94, 0.4);
+}
+
+.manual-code-toggle {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #64748b;
+    padding-top: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.manual-code-toggle:hover {
+    color: #38bdf8;
+}
+
 /* Connect Card */
 .connect-card {
     background: var(--card-bg);

@@ -1,4 +1,4 @@
-// Mobile Companion Controller Logic for eLudo
+// Mobile Companion Controller Logic for eLudo with Live Auto-Discovery Lobby
 
 class ControllerClient {
     constructor() {
@@ -6,16 +6,23 @@ class ControllerClient {
         this.peer = null;
         this.conn = null;
         this.channel = null;
+        this.lobbyChannel = null;
         this.mqttClient = null;
         this.activeForcedValue = null;
-        this.targetColor = 'any'; // 'any', 'red', 'green', 'yellow', 'blue'
+        this.targetColor = 'any';
         this.isStealthDisguise = false;
+        this.discoveredMatches = new Map();
 
         this.initDOM();
+        this.initLobbyDiscovery();
         this.parseURLRoomCode();
     }
 
     initDOM() {
+        this.matchesList = document.getElementById('matches-list');
+        this.btnScanMatches = document.getElementById('btn-scan-matches');
+        this.manualToggleBtn = document.getElementById('manual-toggle-btn');
+        this.connectCard = document.getElementById('connect-card');
         this.inputRoomCode = document.getElementById('input-room-code');
         this.btnConnect = document.getElementById('btn-connect');
         this.connText = document.getElementById('conn-text');
@@ -48,6 +55,14 @@ class ControllerClient {
                 const val = this.inputRoomCode.value.trim();
                 if (val) this.connectToRoom(val);
             }
+        });
+
+        this.btnScanMatches.addEventListener('click', () => {
+            this.scanForMatches();
+        });
+
+        this.manualToggleBtn.addEventListener('click', () => {
+            this.connectCard.classList.toggle('hidden');
         });
 
         // 5-Tap Gesture on Header Bar
@@ -104,7 +119,7 @@ class ControllerClient {
             });
         });
 
-        // Stealth Disguise mode toggle
+        // Stealth Disguise toggle
         this.btnStealthToggle.addEventListener('click', () => {
             this.toggleStealthMode();
         });
@@ -117,6 +132,100 @@ class ControllerClient {
         });
     }
 
+    initLobbyDiscovery() {
+        if (typeof mqtt !== 'undefined') {
+            try {
+                this.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                    clientId: 'eludo_discovery_' + Math.random().toString(16).substr(2, 8),
+                    keepalive: 30
+                });
+
+                this.mqttClient.on('connect', () => {
+                    this.mqttClient.subscribe('eludo/lobby/presence', { qos: 1 });
+                    this.scanForMatches();
+                });
+
+                this.mqttClient.on('message', (topic, message) => {
+                    try {
+                        const data = JSON.parse(message.toString());
+                        if (topic === 'eludo/lobby/presence' && data.type === 'MATCH_PRESENCE') {
+                            this.handleDiscoveredMatch(data);
+                        } else if (data.type === 'STATE_UPDATE' || data.type === 'CONFIRM_FORCE') {
+                            this.handleIncomingMessage(data);
+                        }
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                });
+            } catch (e) {
+                console.warn('MQTT init:', e);
+            }
+        }
+
+        if ('BroadcastChannel' in window) {
+            this.lobbyChannel = new BroadcastChannel('eludo_lobby_discovery');
+            this.lobbyChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'MATCH_PRESENCE') {
+                    this.handleDiscoveredMatch(event.data);
+                }
+            };
+            this.scanForMatches();
+        }
+    }
+
+    scanForMatches() {
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.publish('eludo/lobby/ping', JSON.stringify({ type: 'PING_LOBBY' }), { qos: 1 });
+        }
+        if (this.lobbyChannel) {
+            this.lobbyChannel.postMessage({ type: 'PING_LOBBY' });
+        }
+    }
+
+    handleDiscoveredMatch(match) {
+        if (!match || !match.roomCode) return;
+
+        this.discoveredMatches.set(match.roomCode, {
+            ...match,
+            lastSeen: Date.now()
+        });
+
+        this.renderMatchesList();
+    }
+
+    renderMatchesList() {
+        const now = Date.now();
+        const activeList = Array.from(this.discoveredMatches.values()).filter(m => now - m.lastSeen < 12000);
+
+        if (activeList.length === 0) {
+            this.matchesList.innerHTML = `
+                <div class="scanning-placeholder">
+                    <span class="spin-icon">📡</span> Scanning for active games...
+                </div>
+            `;
+            return;
+        }
+
+        this.matchesList.innerHTML = '';
+        activeList.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'match-item-card';
+            card.innerHTML = `
+                <div class="match-info-group">
+                    <div class="match-room-tag">👑 Room #${m.roomCode}</div>
+                    <div class="match-meta-tag">${m.playerCount} Players • Turn: <strong style="color: ${m.turnColor === 'yellow' ? '#fde047' : m.turnColor}">${m.currentTurn}</strong></div>
+                </div>
+                <div class="match-connect-badge">⚡ Tap to Connect</div>
+            `;
+
+            card.addEventListener('click', () => {
+                this.connectToRoom(m.roomCode);
+            });
+
+            this.matchesList.appendChild(card);
+        });
+    }
+
     parseURLRoomCode() {
         const hash = window.location.hash;
         const params = new URLSearchParams(window.location.search);
@@ -125,10 +234,6 @@ class ControllerClient {
         if (!code && hash) {
             const match = hash.match(/room=([0-9a-zA-Z]+)/);
             if (match) code = match[1];
-        }
-
-        if (!code) {
-            code = localStorage.getItem('eludo_client_room');
         }
 
         if (code) {
@@ -143,36 +248,14 @@ class ControllerClient {
         this.footerRoomCode.textContent = this.roomCode;
         this.updateStatus('yellow', `Connecting to #${this.roomCode}...`);
 
-        // 1. Connect via fast public MQTT WebSocket Broker
-        if (typeof mqtt !== 'undefined') {
-            try {
-                if (this.mqttClient) this.mqttClient.end();
-                this.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-                    clientId: 'eludo_ctrl_' + this.roomCode + '_' + Math.random().toString(16).substr(2, 6),
-                    keepalive: 30
-                });
-
-                this.mqttClient.on('connect', () => {
-                    this.updateStatus('green', `Connected to Ongoing Match #${this.roomCode}`);
-                    this.mqttClient.subscribe(`eludo/room/${this.roomCode}/state`, { qos: 1 });
-                    // Request full state immediately
-                    this.sendMessage({ type: 'REQUEST_STATE' });
-                });
-
-                this.mqttClient.on('message', (topic, message) => {
-                    try {
-                        const data = JSON.parse(message.toString());
-                        this.handleIncomingMessage(data);
-                    } catch (e) {
-                        console.warn(e);
-                    }
-                });
-            } catch (e) {
-                console.warn('MQTT client notice:', e);
-            }
+        // Subscribe to this room's MQTT state
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.subscribe(`eludo/room/${this.roomCode}/state`, { qos: 1 });
+            this.sendMessage({ type: 'REQUEST_STATE' });
+            this.updateStatus('green', `Connected to Match #${this.roomCode}`);
         }
 
-        // 2. Connect via BroadcastChannel
+        // BroadcastChannel
         if ('BroadcastChannel' in window) {
             if (this.channel) this.channel.close();
             this.channel = new BroadcastChannel('eludo_remote_' + this.roomCode);
@@ -180,7 +263,7 @@ class ControllerClient {
             this.channel.postMessage({ type: 'REQUEST_STATE' });
         }
 
-        // 3. Connect via WebRTC (PeerJS)
+        // WebRTC (PeerJS)
         if (typeof Peer !== 'undefined') {
             try {
                 if (this.peer) this.peer.destroy();
@@ -199,7 +282,7 @@ class ControllerClient {
                     this.conn = this.peer.connect(hostPeerId, { reliable: true });
 
                     this.conn.on('open', () => {
-                        this.updateStatus('green', `Connected to Ongoing Match #${this.roomCode}`);
+                        this.updateStatus('green', `Connected to Match #${this.roomCode}`);
                         this.sendMessage({ type: 'REQUEST_STATE' });
                     });
 
@@ -279,7 +362,6 @@ class ControllerClient {
         if (data.type === 'STATE_UPDATE' && data.state) {
             const s = data.state;
             
-            // Turn info
             if (s.currentPlayer) {
                 this.ctrlTurnOwner.textContent = `${s.currentPlayer.name}'s Turn`;
                 this.ctrlTurnOwner.style.color = s.currentPlayer.color === 'yellow' ? '#facc15' : (s.currentPlayer.color === 'blue' ? '#38bdf8' : (s.currentPlayer.color === 'green' ? '#4ade80' : '#f87171'));
@@ -288,7 +370,6 @@ class ControllerClient {
                 this.ctrlLastRoll.textContent = s.diceValue;
             }
 
-            // Game Mode & 2-Player lock
             if (s.playerCount) {
                 this.ctrlModeTag.textContent = `${s.playerCount} Players`;
             }
@@ -323,15 +404,14 @@ class ControllerClient {
                 s.players.forEach(p => {
                     const yardCount = p.pawns.filter(pw => pw.state === 'yard').length;
                     const homeCount = p.pawns.filter(pw => pw.state === 'home').length;
-                    const trackCount = 4 - yardCount - homeCount;
 
                     const pill = document.createElement('div');
                     pill.className = 'pawn-stat-pill';
                     const colHex = p.color === 'yellow' ? '#fde047' : (p.color === 'blue' ? '#60a5fa' : (p.color === 'green' ? '#4ade80' : '#f87171'));
                     pill.innerHTML = `
                         <span class="pawn-stat-name" style="color: ${colHex}">${p.name}</span>
-                        <span>🏠 ${yardCount} in base</span>
-                        <span>👑 ${homeCount} home</span>
+                        <span>🏠 ${yardCount} Base</span>
+                        <span>👑 ${homeCount} Home</span>
                     `;
                     this.livePawnSummary.appendChild(pill);
                 });
@@ -378,7 +458,6 @@ class ControllerClient {
                     posX = 50 + (player.color === 'red' ? -6 : (player.color === 'yellow' ? 6 : 0));
                     posY = 50 + (player.color === 'green' ? -6 : (player.color === 'blue' ? 6 : 0));
                 } else {
-                    // On track or home stretch
                     const angle = (pawn.step / 56) * (2 * Math.PI) - Math.PI / 2;
                     const radius = pawn.state === 'homeStretch' ? 18 : 36;
                     posX = 50 + Math.cos(angle) * radius;

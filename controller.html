@@ -25,8 +25,27 @@
             <div class="stealth-mode-btn" id="btn-stealth-toggle" title="Switch to Stealth Disguise">🕶️ Stealth</div>
         </header>
 
-        <!-- Connection Box -->
-        <section class="connect-card" id="connect-card">
+        <!-- Live Matches Discovery Lobby (Tap to Connect without Code) -->
+        <section class="matches-lobby-card" id="matches-lobby-card">
+            <div class="matches-header">
+                <div class="matches-title-group">
+                    <span class="live-pulse">🟢</span>
+                    <span class="matches-title">Active Matches Online</span>
+                </div>
+                <button id="btn-scan-matches" class="btn-mini-scan" title="Scan for Matches">🔄 Refresh</button>
+            </div>
+            <div class="matches-list" id="matches-list">
+                <div class="scanning-placeholder">
+                    <span class="spin-icon">📡</span> Scanning for active games...
+                </div>
+            </div>
+            <div class="manual-code-toggle" id="manual-toggle-btn">
+                <span>Or Enter Room Code Manually ▼</span>
+            </div>
+        </section>
+
+        <!-- Manual Connection Box (Collapsible) -->
+        <section class="connect-card hidden" id="connect-card">
             <div class="connect-row">
                 <input type="text" id="input-room-code" placeholder="4-Digit Code" maxlength="6" inputmode="numeric" />
                 <button id="btn-connect" class="btn btn-connect">Pair</button>

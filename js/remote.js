@@ -1,4 +1,4 @@
-// Ultra-Reliable Remote Sync Engine for eLudo (WebRTC + Public MQTT Relay + BroadcastChannel)
+// Ultra-Reliable Remote Sync Engine for eLudo (WebRTC + Public MQTT Relay + BroadcastChannel + Discovery Beacon)
 
 class RemoteSync {
     constructor() {
@@ -6,6 +6,7 @@ class RemoteSync {
         this.peer = null;
         this.connections = [];
         this.channel = null;
+        this.lobbyChannel = null;
         this.mqttClient = null;
         this.forcedDiceValue = null;
         this.forcedTargetColor = 'any';
@@ -18,6 +19,7 @@ class RemoteSync {
         this.initBroadcastChannel();
         this.initKeyboardStealth();
         this.initMQTT();
+        this.startPresenceBeacon();
     }
 
     getStoredOrNewRoomCode() {
@@ -35,6 +37,13 @@ class RemoteSync {
             this.channel.onmessage = (event) => {
                 this.handleIncomingMessage(event.data);
             };
+
+            this.lobbyChannel = new BroadcastChannel('eludo_lobby_discovery');
+            this.lobbyChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'PING_LOBBY') {
+                    this.broadcastPresence();
+                }
+            };
         }
     }
 
@@ -42,7 +51,6 @@ class RemoteSync {
         if (typeof mqtt === 'undefined') return;
 
         try {
-            // Connect to public fast MQTT broker over SSL WebSocket
             this.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
                 clientId: 'eludo_host_' + this.roomCode + '_' + Math.random().toString(16).substr(2, 6),
                 keepalive: 30
@@ -51,18 +59,52 @@ class RemoteSync {
             this.mqttClient.on('connect', () => {
                 this.isConnected = true;
                 this.mqttClient.subscribe(`eludo/room/${this.roomCode}/host`, { qos: 1 });
+                this.mqttClient.subscribe(`eludo/lobby/ping`, { qos: 1 });
+                this.broadcastPresence();
             });
 
             this.mqttClient.on('message', (topic, message) => {
                 try {
                     const data = JSON.parse(message.toString());
-                    this.handleIncomingMessage(data);
+                    if (topic === 'eludo/lobby/ping') {
+                        this.broadcastPresence();
+                    } else {
+                        this.handleIncomingMessage(data);
+                    }
                 } catch (e) {
                     console.warn(e);
                 }
             });
         } catch (e) {
             console.warn('MQTT init notice:', e);
+        }
+    }
+
+    startPresenceBeacon() {
+        // Broadcast presence every 4 seconds to the discovery lobby
+        setInterval(() => {
+            this.broadcastPresence();
+        }, 4000);
+    }
+
+    broadcastPresence() {
+        const state = this.onStateRequested ? this.onStateRequested() : null;
+        const beacon = {
+            type: 'MATCH_PRESENCE',
+            roomCode: this.roomCode,
+            playerCount: state ? state.playerCount : 2,
+            currentTurn: state && state.currentPlayer ? state.currentPlayer.name : 'Waiting',
+            turnColor: state && state.currentPlayer ? state.currentPlayer.color : 'red',
+            diceValue: state ? state.diceValue : 1,
+            timestamp: Date.now()
+        };
+
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.mqttClient.publish('eludo/lobby/presence', JSON.stringify(beacon), { qos: 1 });
+        }
+
+        if (this.lobbyChannel) {
+            this.lobbyChannel.postMessage(beacon);
         }
     }
 
@@ -149,15 +191,12 @@ class RemoteSync {
     broadcastState(state) {
         const payload = { type: 'STATE_UPDATE', state };
 
-        // 1. Send via MQTT Relay
         if (this.mqttClient && this.mqttClient.connected) {
             this.mqttClient.publish(`eludo/room/${this.roomCode}/state`, JSON.stringify(payload), { qos: 1 });
         }
 
-        // 2. Send via BroadcastChannel
         if (this.channel) this.channel.postMessage(payload);
 
-        // 3. Send via WebRTC
         this.connections.forEach(conn => {
             if (conn.open) conn.send(payload);
         });
