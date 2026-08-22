@@ -21,8 +21,31 @@ class LudoApp {
         this.initEventListeners();
         this.initRemoteCompanion();
         this.initGameEngineHooks();
-        this.applySetupModeUI(2);
-        this.startNewGame();
+        
+        // Check for saved match in LocalStorage
+        const hasSavedMatch = this.game.restoreSavedGame();
+        if (hasSavedMatch) {
+            this.selectedPlayerCount = this.game.playerCount;
+            this.applySetupModeUI(this.selectedPlayerCount);
+            
+            const yardGreen = document.getElementById('yard-green');
+            const yardBlue = document.getElementById('yard-blue');
+            if (this.selectedPlayerCount === 2) {
+                if (yardGreen) yardGreen.classList.add('yard-inactive');
+                if (yardBlue) yardBlue.classList.add('yard-inactive');
+            } else {
+                if (yardGreen) yardGreen.classList.remove('yard-inactive');
+                if (yardBlue) yardBlue.classList.remove('yard-inactive');
+            }
+
+            this.rebuildPawns();
+            this.updateTurnUI(this.game.getCurrentPlayer());
+            setTimeout(() => this.updatePawnPositions(), 50);
+            this.showToast('🔄 Match state restored!', 1600);
+        } else {
+            this.applySetupModeUI(2);
+            this.startNewGame();
+        }
 
         window.addEventListener('resize', () => {
             this.updatePawnPositions();
@@ -148,9 +171,17 @@ class LudoApp {
 
         // Sound Toggle
         const btnSound = document.getElementById('btn-sound');
+        const savedSound = localStorage.getItem('eludo_sound_enabled');
+        if (savedSound !== null) {
+            const enabled = (savedSound === 'true');
+            window.soundManager.enabled = enabled;
+            btnSound.textContent = enabled ? '🔊' : '🔇';
+        }
+
         btnSound.addEventListener('click', () => {
             const enabled = window.soundManager.toggle();
             btnSound.textContent = enabled ? '🔊' : '🔇';
+            localStorage.setItem('eludo_sound_enabled', enabled.toString());
         });
 
         // New Game Setup Modal

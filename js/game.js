@@ -1,12 +1,12 @@
-// eLudo Core Game Engine & State Machine
+// eLudo Core Game Engine & State Machine with LocalStorage Persistence
 
 class LudoGame {
     constructor() {
-        this.playerCount = 4; // 2 or 4
+        this.playerCount = 4;
         this.players = [];
         this.currentPlayerIndex = 0;
         this.diceValue = 1;
-        this.gameState = 'WAITING_ROLL'; // WAITING_ROLL, ROLLING, WAITING_PAWN_SELECT, MOVING_PAWN, GAME_OVER
+        this.gameState = 'WAITING_ROLL';
         this.sixStreak = 0;
         this.validMovablePawns = [];
         this.finishedRanks = [];
@@ -31,10 +31,8 @@ class LudoGame {
 
         let activeColors = [];
         if (playerCount === 2) {
-            // 2 Players: Red & Yellow (Opposite corners)
             activeColors = [COLORS.RED, COLORS.YELLOW];
         } else {
-            // 4 Players: Red, Green, Yellow, Blue (Clockwise)
             activeColors = [COLORS.RED, COLORS.GREEN, COLORS.YELLOW, COLORS.BLUE];
         }
 
@@ -50,8 +48,8 @@ class LudoGame {
                 pawns: [0, 1, 2, 3].map(pawnId => ({
                     id: pawnId,
                     color: color,
-                    state: 'yard', // yard, track, homeStretch, home
-                    step: -1,      // -1 in yard, 0..50 on track, 51..55 home stretch, 56 home
+                    state: 'yard',
+                    step: -1,
                     trackIndex: null,
                     slotIndex: pawnId
                 }))
@@ -59,11 +57,90 @@ class LudoGame {
         });
 
         this.currentPlayerIndex = 0;
+        this.saveToLocalStorage();
         this.notifyState();
 
         if (this.getCurrentPlayer().isBot) {
             setTimeout(() => this.triggerBotTurn(), 800);
         }
+    }
+
+    saveToLocalStorage() {
+        try {
+            const payload = {
+                playerCount: this.playerCount,
+                currentPlayerIndex: this.currentPlayerIndex,
+                diceValue: this.diceValue,
+                gameState: this.gameState === 'MOVING_PAWN' ? 'WAITING_ROLL' : this.gameState,
+                sixStreak: this.sixStreak,
+                finishedRanks: this.finishedRanks.map(p => p.color),
+                players: this.players.map(p => ({
+                    id: p.id,
+                    color: p.color,
+                    name: p.name,
+                    isBot: p.isBot,
+                    rank: p.rank,
+                    pawns: p.pawns.map(pw => ({
+                        id: pw.id,
+                        color: pw.color,
+                        state: pw.state,
+                        step: pw.step,
+                        trackIndex: pw.trackIndex,
+                        slotIndex: pw.slotIndex
+                    }))
+                }))
+            };
+            localStorage.setItem('eludo_game_save', JSON.stringify(payload));
+        } catch (e) {
+            console.warn('Save game error:', e);
+        }
+    }
+
+    restoreSavedGame() {
+        try {
+            const raw = localStorage.getItem('eludo_game_save');
+            if (!raw) return false;
+            const data = JSON.parse(raw);
+            if (!data || !data.players || data.players.length === 0) return false;
+
+            this.playerCount = data.playerCount || data.players.length;
+            this.currentPlayerIndex = data.currentPlayerIndex || 0;
+            this.diceValue = data.diceValue || 1;
+            this.gameState = data.gameState || 'WAITING_ROLL';
+            this.sixStreak = data.sixStreak || 0;
+            this.isProcessingMove = false;
+
+            this.players = data.players.map((p, idx) => ({
+                id: p.id !== undefined ? p.id : idx,
+                color: p.color,
+                name: p.name || COLOR_CONFIG[p.color].name,
+                isBot: !!p.isBot,
+                rank: p.rank !== undefined ? p.rank : null,
+                path: BoardHelper.getPathForColor(p.color),
+                pawns: p.pawns.map((pw, pawnId) => ({
+                    id: pw.id !== undefined ? pw.id : pawnId,
+                    color: p.color,
+                    state: pw.state || 'yard',
+                    step: pw.step !== undefined ? pw.step : -1,
+                    trackIndex: pw.trackIndex !== undefined ? pw.trackIndex : null,
+                    slotIndex: pw.slotIndex !== undefined ? pw.slotIndex : pawnId
+                }))
+            }));
+
+            this.finishedRanks = (data.finishedRanks || [])
+                .map(col => this.players.find(p => p.color === col))
+                .filter(Boolean);
+
+            this.notifyState();
+            return true;
+        } catch (e) {
+            console.warn('Restore game error:', e);
+            return false;
+        }
+    }
+
+    clearSavedGame() {
+        localStorage.removeItem('eludo_game_save');
     }
 
     getCurrentPlayer() {
@@ -117,7 +194,6 @@ class LudoGame {
         const current = this.getCurrentPlayer();
         const hasPawnsInYard = current.pawns.some(p => p.state === 'yard');
 
-        // Check if remote controller or keyboard queued a forced dice number
         let forced = null;
         if (window.remoteSync) {
             forced = window.remoteSync.consumeForcedDice({
@@ -131,6 +207,7 @@ class LudoGame {
             : Math.floor(Math.random() * 6) + 1;
 
         this.diceValue = rolledNumber;
+        this.saveToLocalStorage();
 
         if (this.onDiceRolled) {
             this.onDiceRolled(rolledNumber, () => {
@@ -152,7 +229,6 @@ class LudoGame {
             this.sixStreak = 0;
         }
 
-        // Rule: 3 consecutive sixes forfeits turn
         if (this.sixStreak === 3) {
             this.sixStreak = 0;
             if (this.onBonusTurn) {
@@ -162,23 +238,22 @@ class LudoGame {
             return;
         }
 
-        // Compute valid movable pawns
         this.validMovablePawns = this.getValidMovesForPlayer(current, rolledNumber);
 
         if (this.validMovablePawns.length === 0) {
-            // No valid moves, pass turn after brief pause
             this.gameState = 'WAITING_ROLL';
+            this.saveToLocalStorage();
             setTimeout(() => this.passTurn(), 900);
             return;
         }
 
         this.gameState = 'WAITING_PAWN_SELECT';
+        this.saveToLocalStorage();
         this.notifyState();
 
         if (current.isBot) {
             setTimeout(() => this.chooseBotPawnMove(), 700);
         } else {
-            // If human player has only 1 valid move, auto-select for convenience after short pause
             if (this.validMovablePawns.length === 1) {
                 setTimeout(() => {
                     if (this.gameState === 'WAITING_PAWN_SELECT' && this.getCurrentPlayer().id === current.id) {
@@ -200,7 +275,6 @@ class LudoGame {
                     valid.push(pawn);
                 }
             } else {
-                // On track or home stretch
                 const newStep = pawn.step + diceValue;
                 if (newStep <= 56) {
                     valid.push(pawn);
@@ -226,7 +300,6 @@ class LudoGame {
         this.gameState = 'MOVING_PAWN';
 
         if (pawn.state === 'yard') {
-            // Unlocking pawn from yard to starting track tile
             window.soundManager.playUnlock();
             pawn.state = 'track';
             pawn.step = 0;
@@ -234,13 +307,12 @@ class LudoGame {
 
             if (this.onPawnMoved) {
                 this.onPawnMoved(pawn, true, () => {
-                    this.afterPawnMove(pawn, true); // Exiting yard gives bonus roll on 6
+                    this.afterPawnMove(pawn, true);
                 });
             } else {
                 this.afterPawnMove(pawn, true);
             }
         } else {
-            // Moving along the path step-by-step
             const startStep = pawn.step;
             const targetStep = pawn.step + this.diceValue;
 
@@ -297,13 +369,11 @@ class LudoGame {
         let earnedBonusRoll = (this.diceValue === 6);
         let bonusReason = isYardUnlock ? 'Rolled a 6!' : (earnedBonusRoll ? 'Rolled a 6!' : '');
 
-        // 1. Check if pawn reached Home (step 56)
         if (pawn.state === 'home') {
             window.soundManager.playHome();
             earnedBonusRoll = true;
             bonusReason = 'Pawn reached Home! Extra roll awarded!';
 
-            // Check if player has brought all 4 pawns home
             const current = this.getCurrentPlayer();
             const allHome = current.pawns.every(p => p.state === 'home');
             if (allHome && !current.rank) {
@@ -317,19 +387,16 @@ class LudoGame {
             }
         }
 
-        // 2. Check for Enemy Pawn Capture on common track
         if (pawn.state === 'track') {
             const current = this.getCurrentPlayer();
             const trackIdx = pawn.trackIndex;
             const isSafe = BoardHelper.isSafeTile(trackIdx);
 
             if (!isSafe) {
-                // Check other players' pawns on this tile
                 this.players.forEach(otherPlayer => {
                     if (otherPlayer.id !== current.id) {
                         otherPlayer.pawns.forEach(enemyPawn => {
                             if (enemyPawn.state === 'track' && enemyPawn.trackIndex === trackIdx) {
-                                // CAPTURE! Send back to yard
                                 enemyPawn.state = 'yard';
                                 enemyPawn.step = -1;
                                 enemyPawn.trackIndex = null;
@@ -349,12 +416,14 @@ class LudoGame {
         }
 
         this.isProcessingMove = false;
+        this.saveToLocalStorage();
 
         if (earnedBonusRoll && !this.getCurrentPlayer().rank) {
             if (this.onBonusTurn) {
                 this.onBonusTurn(bonusReason);
             }
             this.gameState = 'WAITING_ROLL';
+            this.saveToLocalStorage();
             this.notifyState();
             if (this.getCurrentPlayer().isBot) {
                 setTimeout(() => this.triggerBotTurn(), 800);
@@ -373,7 +442,6 @@ class LudoGame {
             return;
         }
 
-        // Find next active player who hasn't finished yet
         let attempts = 0;
         do {
             this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
@@ -381,6 +449,7 @@ class LudoGame {
         } while (this.getCurrentPlayer().rank !== null && attempts < this.players.length);
 
         this.gameState = 'WAITING_ROLL';
+        this.saveToLocalStorage();
         this.notifyState();
 
         if (this.onTurnChange) {
@@ -393,7 +462,6 @@ class LudoGame {
     }
 
     checkGameOver() {
-        // In N players, game ends when N - 1 players finish (e.g. 1st, 2nd, 3rd)
         const unRanked = this.players.filter(p => p.rank === null);
         if (unRanked.length <= 1) {
             if (unRanked.length === 1) {
@@ -401,6 +469,7 @@ class LudoGame {
                 this.finishedRanks.push(unRanked[0]);
             }
             this.gameState = 'GAME_OVER';
+            this.clearSavedGame();
             if (this.onGameFinished) {
                 this.onGameFinished(this.finishedRanks);
             }
@@ -410,7 +479,6 @@ class LudoGame {
         return false;
     }
 
-    // Bot AI Heuristic Strategy
     triggerBotTurn() {
         if (this.gameState === 'WAITING_ROLL' && this.getCurrentPlayer().isBot) {
             this.rollDice();
@@ -425,7 +493,6 @@ class LudoGame {
         const current = this.getCurrentPlayer();
         const dice = this.diceValue;
 
-        // Evaluate score for each valid pawn
         let bestPawn = this.validMovablePawns[0];
         let bestScore = -9999;
 
@@ -433,13 +500,11 @@ class LudoGame {
             let score = 0;
 
             if (pawn.state === 'yard' && dice === 6) {
-                // Getting out of yard is very valuable
                 score += 150;
             } else {
                 const currentStep = pawn.step;
                 const targetStep = currentStep + dice;
 
-                // 1. Reaching home
                 if (targetStep === 56) {
                     score += 500;
                 }
@@ -448,31 +513,27 @@ class LudoGame {
                 if (targetNode && targetNode.type === 'track') {
                     const targetTrackIdx = targetNode.trackIndex;
 
-                    // 2. Capturing an opponent
                     if (!BoardHelper.isSafeTile(targetTrackIdx)) {
                         this.players.forEach(op => {
                             if (op.id !== current.id) {
                                 op.pawns.forEach(ep => {
                                     if (ep.state === 'track' && ep.trackIndex === targetTrackIdx) {
-                                        score += 350 + (ep.step * 2); // More reward if opponent was far along
+                                        score += 350 + (ep.step * 2);
                                     }
                                 });
                             }
                         });
                     }
 
-                    // 3. Landing on a safe star
                     if (BoardHelper.isSafeTile(targetTrackIdx)) {
                         score += 80;
                     }
                 }
 
-                // 4. Entering home stretch
                 if (targetNode && targetNode.type === 'homeStretch') {
                     score += 120;
                 }
 
-                // 5. Prefer advancing pawns further ahead
                 score += targetStep * 2;
             }
 
