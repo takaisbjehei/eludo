@@ -159,7 +159,21 @@ class LudoApp {
         };
 
         this.game.onDiceRolled = (number, onFinished) => {
+            this.diceHint.textContent = 'Rolling...';
             this.animate3DDice(number, onFinished);
+        };
+
+        this.game.onWaitingPawnSelect = (validPawns) => {
+            this.updatePawnPositions();
+            if (!this.game.getCurrentPlayer().isBot) {
+                this.diceHint.textContent = '✨ Tap a Bouncing Piece to Move!';
+            }
+        };
+
+        this.game.onNoMovesAvailable = (num, reason) => {
+            this.updatePawnPositions();
+            this.showToast(reason, 1500);
+            this.diceHint.textContent = reason;
         };
 
         this.game.onPawnMoved = (pawn, isUnlock, onComplete) => {
@@ -409,10 +423,25 @@ class LudoApp {
 
                 pawnEl.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (this.game.gameState === 'WAITING_PAWN_SELECT' &&
-                        this.game.getCurrentPlayer().color === player.color &&
-                        !this.game.getCurrentPlayer().isBot) {
-                        this.game.movePawn(pawn.id);
+                    if (this.game.getCurrentPlayer().isBot) return;
+
+                    if (this.game.gameState === 'WAITING_PAWN_SELECT') {
+                        if (this.game.getCurrentPlayer().color === player.color) {
+                            const isMovable = this.game.validMovablePawns.some(p => p.id === pawn.id);
+                            if (isMovable) {
+                                this.game.movePawn(pawn.id);
+                            } else {
+                                if (pawn.state === 'yard') {
+                                    this.showToast('⚠️ Need a 6 to exit base!', 1400);
+                                } else {
+                                    this.showToast(`⚠️ Cannot move ${this.game.diceValue} steps`, 1400);
+                                }
+                            }
+                        } else {
+                            this.showToast(`It is ${this.game.getCurrentPlayer().name}'s turn!`, 1400);
+                        }
+                    } else if (this.game.gameState === 'WAITING_ROLL') {
+                        this.showToast('🎲 Tap the dice to roll first!', 1300);
                     }
                 });
 
@@ -553,6 +582,13 @@ class LudoApp {
 
         this.turnPill.className = `turn-pill ${player.color}-turn`;
         this.turnText.textContent = `${player.name}'s Turn ${player.isBot ? '(AI)' : ''}`;
+
+        // Highlight active corner base
+        document.querySelectorAll('.yard').forEach(y => y.classList.remove('yard-turn-active'));
+        const activeYard = document.getElementById(`yard-${player.color}`);
+        if (activeYard && !activeYard.classList.contains('yard-inactive')) {
+            activeYard.classList.add('yard-turn-active');
+        }
 
         document.querySelectorAll('.player-card').forEach(card => card.classList.remove('active'));
         const activeCard = document.getElementById(`card-${player.color}`);

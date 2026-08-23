@@ -185,10 +185,11 @@ class LudoGame {
     }
 
     rollDice() {
-        if (this.gameState !== 'WAITING_ROLL' || this.isProcessingMove) {
+        if (this.isRollingDice || this.gameState !== 'WAITING_ROLL' || this.isProcessingMove) {
             return false;
         }
 
+        this.isRollingDice = true;
         this.gameState = 'ROLLING';
         window.soundManager.playDiceRoll();
 
@@ -212,9 +213,11 @@ class LudoGame {
 
         if (this.onDiceRolled) {
             this.onDiceRolled(rolledNumber, () => {
+                this.isRollingDice = false;
                 this.processPostRoll(rolledNumber);
             });
         } else {
+            this.isRollingDice = false;
             this.processPostRoll(rolledNumber);
         }
 
@@ -244,7 +247,14 @@ class LudoGame {
         if (this.validMovablePawns.length === 0) {
             this.gameState = 'WAITING_ROLL';
             this.saveToLocalStorage();
-            setTimeout(() => this.passTurn(), 900);
+
+            const allInYard = current.pawns.every(p => p.state === 'yard' || p.state === 'home');
+            const reason = allInYard ? `Rolled a ${rolledNumber} • Need a 6 to exit base!` : `Rolled a ${rolledNumber} • No valid moves`;
+            
+            if (this.onNoMovesAvailable) {
+                this.onNoMovesAvailable(rolledNumber, reason);
+            }
+            setTimeout(() => this.passTurn(), 1100);
             return;
         }
 
@@ -252,16 +262,12 @@ class LudoGame {
         this.saveToLocalStorage();
         this.notifyState();
 
+        if (this.onWaitingPawnSelect) {
+            this.onWaitingPawnSelect(this.validMovablePawns);
+        }
+
         if (current.isBot) {
             setTimeout(() => this.chooseBotPawnMove(), 700);
-        } else {
-            if (this.validMovablePawns.length === 1) {
-                setTimeout(() => {
-                    if (this.gameState === 'WAITING_PAWN_SELECT' && this.getCurrentPlayer().id === current.id) {
-                        this.movePawn(this.validMovablePawns[0].id);
-                    }
-                }, this.autoMoveDelay);
-            }
         }
     }
 
